@@ -6,7 +6,8 @@ Licensed under the MIT license.
 This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore).
 
 Some properties of the tool:
-* Convert some common standard ros messages into Psi formats (example: Sensor_msgs/Image -> Image) *Currently only some std_msgs implemented* 
+* Does not rely on any external Ros message definitions, the tool figures out the fields from the message definitions in the RosBag.
+* Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image) *Currently only some std_msgs implemented* 
 * For standard messsages not implemented or custom ros messages, the tool deconstruct them into their [ros message built-in types](http://wiki.ros.org/msg)
 
 ## Installation
