@@ -6,6 +6,7 @@ Licensed under the MIT license.
 This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore).
 
 Some properties of the tool:
+* [Coming] If the message has a header in the root level, the message's originating time is set to the header time & the message time will be the time the message was published. If the message does not have a header, both originate and message time are set to the message publish time.
 * Does not rely on any external Ros message definitions, the tool figures out the fields from the message definitions in the RosBag.
 * Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image) *Currently only some std_msgs implemented* 
 * For standard messsages not implemented or custom ros messages, the tool deconstruct them into their [ros message built-in types](http://wiki.ros.org/msg)
@@ -57,5 +58,6 @@ RosBagConverter.exe convert -f C:\Data\psi_test_59_msgs.bag -o C:\Data -n t1 -t 
 
 ## TODO & Limitations
 1. Handle RosBag Files that are split into multiple files
-2. Implemented Sensor_msgs and able to convert to images
-3. Figure out how to deal with TF (transformations)
+1. Change the originate time in the file to the header time. (Figure out the way propagate originated time and latency)
+1. Implemented Sensor_msgs and able to convert to images
+1. Figure out how to deal with TF (transformations)
