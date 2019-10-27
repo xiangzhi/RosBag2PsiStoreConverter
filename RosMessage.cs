@@ -88,6 +88,12 @@ namespace RosBagConverter
         }
 
 
+        public byte[] GetRawField(string indexString)
+        {
+            var fieldData = this.messageType.GetData(this.RawData, indexString);
+            return fieldData.Item2;
+        }
+
         public dynamic GetField(string indexString)
         {
 

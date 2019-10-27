@@ -17,10 +17,7 @@ namespace RosBagConverter.MessageSerializers
 
         public StdMsgsSerializers(KnownSerializers serializers = null)
         {
-/*            if (serializers == null)
-            {
-                this.serializers = new KnownSerializers();
-            }*/
+            // TODO I wanted everyone to share a serializer but somehow they currently randomly get deconstructed.
         }
 
         private void WriteToStore(StoreWriter store, BufferWriter dataBuffer, RosMessage message, int streamId, int msgNum)

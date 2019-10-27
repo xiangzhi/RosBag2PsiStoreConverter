@@ -19,12 +19,14 @@ namespace RosBagConverter
         private SerializationContext context = new SerializationContext();
         private int streamCounter = 0;
         private StdMsgsSerializers stdMsgsSerializer;
+        private SensorMsgsSerializer sensorMsgsSerializer;
         private Dictionary<string, RosMessageDefinition> knowMessageDefinitions;
 
         public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions)
         {
             this.knowMessageDefinitions = knownDefinitions;
             this.stdMsgsSerializer = new StdMsgsSerializers(this.serializers);
+            this.sensorMsgsSerializer = new SensorMsgsSerializer(this.serializers);
         }
 
 
@@ -42,43 +44,50 @@ namespace RosBagConverter
             {
                 return false;
             }
+
+            // Loop through a list of known message type
+            // Cool to do some reflection on how to automate this.
             if (messageType.StartsWith("std_msgs"))
             {
                 complete = this.stdMsgsSerializer.SerializeMessage(store, streamName, messages, streamCounter++);
-                // call the common to serialize this format
             }
-/*            else if (messageType.StartsWith("sensor_msgs"))
+            else if (messageType.StartsWith("sensor_msgs"))
             {
-                // call the sensor_msgs serializer
-*//*                if (messageType == "sensor_msgs/Image")
-                {
-                    BufferWriter dataBuffer = new BufferWriter(128);
+                complete = this.sensorMsgsSerializer.SerializeMessage(store, streamName, messages, streamCounter++);
+            }
 
-                    var ImageSerializer = this.serializers.GetHandler<Image>();
-                    int streamId = streamCounter++;
-                    store.OpenStream(streamId, streamName, true, ImageSerializer.Name);
-                    for (var i = 0; i < messages.Count; i++)
-                    {
-                        var height = (int)messages[i].GetField("height");
-                        var width = (int)messages[i].GetField("width");
-                        var data = ((List<dynamic>)messages[i].GetField("data")).Cast<byte>()
-                        IntPtr;
-                        var image = new Image(data, width, height, Microsoft.Psi.Imaging.PixelFormat.BGR_24bpp);
-                        context.Reset();
-                        dataBuffer.Reset();
-                        intSerializer.Serialize(dataBuffer, (int)messages[i].GetField("data"), context);
-                        this.WriteToStore(store, dataBuffer, messages[i], streamId, i);
-                    }
+            /*            else if (messageType.StartsWith("sensor_msgs"))
+                        {
+                            // call the sensor_msgs serializer
+            *//*                if (messageType == "sensor_msgs/Image")
+                            {
+                                BufferWriter dataBuffer = new BufferWriter(128);
 
-                }*//*
-            }*/
+                                var ImageSerializer = this.serializers.GetHandler<Image>();
+                                int streamId = streamCounter++;
+                                store.OpenStream(streamId, streamName, true, ImageSerializer.Name);
+                                for (var i = 0; i < messages.Count; i++)
+                                {
+                                    var height = (int)messages[i].GetField("height");
+                                    var width = (int)messages[i].GetField("width");
+                                    var data = ((List<dynamic>)messages[i].GetField("data")).Cast<byte>()
+                                    IntPtr;
+                                    var image = new Image(data, width, height, Microsoft.Psi.Imaging.PixelFormat.BGR_24bpp);
+                                    context.Reset();
+                                    dataBuffer.Reset();
+                                    intSerializer.Serialize(dataBuffer, (int)messages[i].GetField("data"), context);
+                                    this.WriteToStore(store, dataBuffer, messages[i], streamId, i);
+                                }
+
+                            }*//*
+                        }*/
 
             if (complete)
             {
                 return true;
             }
 
-            // If it's an unknown type, we try our best to serialize it by parsing each part
+            // If it's an unknown field type, we try our best to serialize it by parsing each part
             var messageDefiniton = messages.First().MessageType;
             foreach (var fieldName in messageDefiniton.FieldList)
             {
@@ -87,25 +96,19 @@ namespace RosBagConverter
                 {
                     this.serializeBuiltInFields(store, fieldName, messageDefiniton.GetFieldType(fieldName), String.Format("{0}.{1}", streamName, fieldName), messages, streamCounter++);
                 }
-                //
+               
+                // Try to see if the field type is a known type that we read from the message definition.
                 foreach(var knownType in this.knowMessageDefinitions.Keys)
                 {
                     if (knownType.EndsWith(messageDefiniton.GetFieldType(fieldName)))
                     {
+                        // we construct a submessage using the same variables as before. This is to setup a recursive call on the serialization
                         var subMessages = messages.Select(x => x.GetFieldAsRosMessage(this.knowMessageDefinitions[knownType], fieldName)).ToList();
+                        // Recursively call the serialization code
                         this.SerializeMessage(store, String.Format("{0}.{1}", streamName, fieldName), subMessages);
                     }
                 }
-                // recursively try to solve it if it's another type
-                // The idea is that the internet messages become another List<RosMessage> and we can pass it down
-                // for now, we just going to ignore it
-                // There is a question on how we going to load the definitions
-                // var message = messages.Select(x => x.GetField(fieldName));
             }
-
-
-
-
             return false;
         }
 
