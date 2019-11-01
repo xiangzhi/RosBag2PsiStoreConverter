@@ -157,7 +157,7 @@ namespace RosBagConverter
                 case "uint16":
                 case "int32":
                 case "uint32":
-                case "flaot32":
+                case "float32":
                 case "time":
                 case "duration":
                 case "int64":
@@ -198,7 +198,7 @@ namespace RosBagConverter
                     return 2;
                 case "int32":
                 case "uint32":
-                case "flaot32":
+                case "float32":
                     return 4;
                 case "time":
                 case "duration":

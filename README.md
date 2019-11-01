@@ -12,20 +12,18 @@ Some properties of the tool:
 * For standard messsages not implemented or custom ros messages, the tool deconstruct them into their [ros message built-in types](http://wiki.ros.org/msg)
 
 ## Installation
-1. To build the tool, you need the source version of [Platform for Situated Intelligence](https://github.com/microsoft/psi).
-2. Add this project to the solution (Suggested location is Psi\Samples).
-3. Edit ``psi\Sources\Runtime\Microsoft.Psi\Serialization\KnownSerializers.cs`` and change the method `GetHandler<T>()` from internal to public. You will also need to disable the warning.
-```
-#pragma warning disable SA1600 // Elements should be documented
-        public SerializationHandler<T> GetHandler<T>()
-#pragma warning restore SA1600 // Elements should be documented
-```
-4. Build the tool.
+
+The tool depends on the [Platform for Situated Intelligence](https://github.com/microsoft/psi) which is installed upon first build.
+Open `RosBagConverter.sln` and Build Solution.
 
 ## Usage
+
 To use the tool, open the commandline tool and navigate to where the executable is. Our goal is to eventually provide the same functionalities as those in [rosbag tools](http://wiki.ros.org/bag_tools).
 
+If you need some test data, try running through the [Recording and playing back data](http://wiki.ros.org/rosbag/Tutorials/Recording%20and%20playing%20back%20data) tutorial, then `RosBagConverter.exe convert -f <my_path>\turtle.bag -o <my_path> -n Turtle`
+
 #### Info
+
 `RosBagConverter.exe info`
 This list out the topics in the given RosBag. 
 ```
