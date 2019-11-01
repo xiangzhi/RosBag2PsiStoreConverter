@@ -30,8 +30,8 @@ namespace RosBagConverter
         {
             var bag = new RosBag(opts.Input);
             var topicList = opts.Topics.Count() > 0 ? opts.Topics : bag.TopicList;
-            // create a psi store
 
+            // create a psi store
             using (var pipeline = Pipeline.Create())
             {
                 var store = Store.Create(pipeline, opts.Name, opts.Output);

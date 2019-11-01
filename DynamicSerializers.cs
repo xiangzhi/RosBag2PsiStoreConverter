@@ -26,10 +26,9 @@ namespace RosBagConverter
             Generators.Sequence(pipeline, messages.Select(m => ((T)m.Item1, m.Item2))).Write(topic, store);
         }
 
-        public static void Write(Pipeline pipeline, string topic, IEnumerable<(dynamic, DateTime)> messages, Exporter store)
+        public static void WriteDynamic(Pipeline pipeline, string topic, IEnumerable<(dynamic, DateTime)> messages, Exporter store)
         {
-            var first = messages.First();
-            switch (first.Item1)
+            switch (messages.First().Item1)
             {
                 case string _:
                     WriteStronglyTyped<string>(pipeline, topic, messages, store);
@@ -39,6 +38,9 @@ namespace RosBagConverter
                     break;
                 case byte _:
                     WriteStronglyTyped<byte>(pipeline, topic, messages, store);
+                    break;
+                case sbyte _:
+                    WriteStronglyTyped<sbyte>(pipeline, topic, messages, store);
                     break;
                 case short _:
                     WriteStronglyTyped<short>(pipeline, topic, messages, store);
@@ -63,12 +65,6 @@ namespace RosBagConverter
                     break;
                 case double _:
                     WriteStronglyTyped<double>(pipeline, topic, messages, store);
-                    break;
-                case RosTime _:
-                    WriteStronglyTyped<RosTime>(pipeline, topic, messages, store);
-                    break;
-                case RosDuration _:
-                    WriteStronglyTyped<RosDuration>(pipeline, topic, messages, store);
                     break;
             }
         }
@@ -171,13 +167,13 @@ namespace RosBagConverter
                 case ("float64"):
                 case ("string"):
                 case ("bool"):
-                    Write(pipeline, streamName, messages.Select(m => (m.GetField(fieldName), m.Time.ToDateTime())), store);
+                    WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField(fieldName), m.Time.ToDateTime())), store);
                     return;
                 case ("time"):
-                    Write(pipeline, streamName, messages.Select(m => ((dynamic)((RosTime)m.GetField(fieldName)).ToDateTime(), m.Time.ToDateTime())), store);
+                    WriteStronglyTyped<RosTime>(pipeline, streamName, messages.Select(m => ((dynamic)((RosTime)m.GetField(fieldName)).ToDateTime(), m.Time.ToDateTime())), store);
                     return;
                 case ("duration"):
-                    Write(pipeline, streamName, messages.Select(m => ((dynamic)((RosDuration)m.GetField(fieldName)).ToTimeSpan(), m.Time.ToDateTime())), store);
+                    WriteStronglyTyped<RosTime>(pipeline, streamName, messages.Select(m => ((dynamic)((RosDuration)m.GetField(fieldName)).ToTimeSpan(), m.Time.ToDateTime())), store);
                     return;
             }
 
@@ -190,7 +186,7 @@ namespace RosBagConverter
                     case ("uint8"):
                     case ("int32"):
                     case ("float64"):
-                        Write(pipeline, streamName, messages.Select(m => ((dynamic)m.GetField(fieldName), m.Time.ToDateTime())), store);
+                        WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)m.GetField(fieldName), m.Time.ToDateTime())), store);
                         return;
                 }
             }

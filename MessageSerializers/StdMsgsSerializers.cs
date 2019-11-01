@@ -28,7 +28,7 @@ namespace RosBagConverter.MessageSerializers
                 case "std_msgs/Float64":
                 case "std_msgs/String":
                 case "std_msgs/Bool":
-                    DynamicSerializers.Write(pipeline, streamName, messages.Select(m => (m.GetField("data"), m.Time.ToDateTime())), store);
+                    DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField("data"), m.Time.ToDateTime())), store);
                     return true;
                 default: return false;
             }

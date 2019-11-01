@@ -19,7 +19,7 @@ namespace RosBagConverter.MessageSerializers
             switch (messageType)
             {
                 case ("sensor_msgs/Image"):
-                    DynamicSerializers.Write(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
+                    DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
                     return true;
                 default: return false;
             }
