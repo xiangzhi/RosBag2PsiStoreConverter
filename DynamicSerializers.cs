@@ -23,6 +23,7 @@ namespace RosBagConverter
 
         private static void WriteStronglyTyped<T>(Pipeline pipeline, string topic, IEnumerable<(dynamic, DateTime)> messages, Exporter store)
         {
+            Console.WriteLine($"Stream: {topic} ({typeof(T)})");
             Generators.Sequence(pipeline, messages.Select(m => ((T)m.Item1, m.Item2))).Write(topic, store);
         }
 
@@ -65,6 +66,12 @@ namespace RosBagConverter
                     break;
                 case double _:
                     WriteStronglyTyped<double>(pipeline, topic, messages, store);
+                    break;
+                case RosTime _:
+                    WriteStronglyTyped<RosTime>(pipeline, topic, messages, store);
+                    break;
+                case RosDuration _:
+                    WriteStronglyTyped<RosDuration>(pipeline, topic, messages, store);
                     break;
             }
         }
@@ -170,10 +177,10 @@ namespace RosBagConverter
                     WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField(fieldName), m.Time.ToDateTime())), store);
                     return;
                 case ("time"):
-                    WriteStronglyTyped<RosTime>(pipeline, streamName, messages.Select(m => ((dynamic)((RosTime)m.GetField(fieldName)).ToDateTime(), m.Time.ToDateTime())), store);
+                    WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)((RosTime)m.GetField(fieldName)).ToDateTime(), m.Time.ToDateTime())), store);
                     return;
                 case ("duration"):
-                    WriteStronglyTyped<RosTime>(pipeline, streamName, messages.Select(m => ((dynamic)((RosDuration)m.GetField(fieldName)).ToTimeSpan(), m.Time.ToDateTime())), store);
+                    WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)((RosDuration)m.GetField(fieldName)).ToTimeSpan(), m.Time.ToDateTime())), store);
                     return;
             }
 
