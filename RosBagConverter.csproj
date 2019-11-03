@@ -3,16 +3,17 @@
     <OutputType>Exe</OutputType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFramework>net472</TargetFramework>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0-beta</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.6.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\psi\Sources\Imaging\Microsoft.Psi.Imaging\Microsoft.Psi.Imaging.csproj" />
-    <ProjectReference Include="..\psi\Sources\Runtime\Microsoft.Psi\Microsoft.Psi.csproj" />
+    <PackageReference Include="Microsoft.Psi.Imaging" Version="0.10.16.1-beta" />
+    <PackageReference Include="Microsoft.Psi.Runtime" Version="0.10.16.1-beta" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

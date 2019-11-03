@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Psi;
-using Microsoft.Psi.Common;
-using Microsoft.Psi.Persistence;
-using Microsoft.Psi.Serialization;
 using CommandLine;
 
 namespace RosBagConverter
@@ -35,25 +29,22 @@ namespace RosBagConverter
         private static int ConvertBag(Verbs.ConvertOptions opts)
         {
             var bag = new RosBag(opts.Input);
-            IEnumerable<string> topicList;
-            if (opts.Topics.Count() > 0)
-            {
-                topicList = opts.Topics;
-            }
-            else
-            {
-                topicList = bag.TopicList;
-            }
-            // create a psi store
-            var store = new StoreWriter(opts.Name, opts.Output);
-            var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions);
+            var topicList = opts.Topics.Count() > 0 ? opts.Topics : bag.TopicList;
 
-            foreach (var topic in topicList)
+            // create a psi store
+            using (var pipeline = Pipeline.Create())
             {
-                var topicDefinition = bag.GetMessageDefinition(topic);
-                var messages = bag.ReadTopic(topic);
-                dynamicSerializer.SerializeMessage(store, topic, messages);
+                var store = Store.Create(pipeline, opts.Name, opts.Output);
+                var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions);
+                foreach (var topic in topicList)
+                {
+                    var messages = bag.ReadTopic(topic);
+                    dynamicSerializer.SerializeMessages(pipeline, store, topic, messages);
+                }
+
+                pipeline.Run();
             }
+
             return 1;
         }
 
