@@ -21,7 +21,7 @@ namespace RosBagConverter
             this.sensorMsgsSerializer = new SensorMsgsSerializer();
         }
 
-        private static void WriteStronglyTyped<T>(Pipeline pipeline, string topic, IEnumerable<(dynamic, DateTime)> messages, Exporter store)
+        public static void WriteStronglyTyped<T>(Pipeline pipeline, string topic, IEnumerable<(dynamic, DateTime)> messages, Exporter store)
         {
             Console.WriteLine($"Stream: {topic} ({typeof(T)})");
             Generators.Sequence(pipeline, messages.Select(m => ((T)m.Item1, m.Item2))).Write(topic, store);

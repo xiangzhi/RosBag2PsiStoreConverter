@@ -21,8 +21,12 @@ namespace RosBagConverter.MessageSerializers
                 switch (messageType)
                 {
                     case ("sensor_msgs/Image"):
-                        DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
+                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.ImageToPsiImage(m), m.Time.ToDateTime())), store);
                         return true;
+                    default: return false;
+/*                    case ("sensor_msgs/CompressedImage"):
+                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
+                        return true;*/
                     default: return false;
                 }
             }
@@ -36,7 +40,7 @@ namespace RosBagConverter.MessageSerializers
 
         private PixelFormat EncodingToPixelFormat(string encoding)
         {
-            switch (encoding)
+            switch (encoding.ToUpper())
             {
                 case ("BGR8"): return PixelFormat.BGR_24bpp;
                 case ("BGRA8"): return PixelFormat.BGRA_32bpp;
@@ -47,7 +51,7 @@ namespace RosBagConverter.MessageSerializers
             }
         }
 
-        private dynamic RosMessageToPsiImage(RosMessage message)
+        private dynamic ImageToPsiImage(RosMessage message)
         {
             int width = (int)message.GetField("width");
             int height = (int)message.GetField("height");
@@ -61,10 +65,16 @@ namespace RosBagConverter.MessageSerializers
                 throw new NotSupportedException($"Image Encoding Type {encoding} is not supported");
             }
 
+/*                        var image = Image.Create(width, height, format);
+                        image.CopyFrom(message.GetRawField("data").Skip(4).ToArray());
+                        return image;*/
+
             using (var sharedImage = ImagePool.GetOrCreate(width, height, PixelFormat.BGRA_32bpp))
             {
-                sharedImage.Resource.CopyFrom(message.GetRawField("data"));
-                return sharedImage;
+                // skip the first 4 bytes because in ROS Message its a varied length array where the first 4 bytes tell us the length.
+                sharedImage.Resource.CopyFrom(message.GetRawField("data").Skip(4).ToArray());
+                return sharedImage.AddRef();
+                // return sharedImage;
             }
         }
     }
