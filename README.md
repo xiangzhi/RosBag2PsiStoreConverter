@@ -54,8 +54,12 @@ RosBagConverter.exe convert -f C:\Data\psi_test_59_msgs.bag -o C:\Data -n t1 -t 
 RosBagConverter.exe convert -f C:\Data\psi_test_59_msgs.bag -o C:\Data -n t1 -t --topics /text /rosout
 ```
 
-## TODO & Limitations
-1. Handle RosBag Files that are split into multiple files
-1. Change the originate time in the file to the header time. (Figure out the way propagate originated time and latency)
-1. Implemented Sensor_msgs and able to convert to images
-1. Figure out how to deal with TF (transformations)
+## TODO
+1. Handle RosBag Files that are split into multiple files. Currently, you can just inspect each file individually.
+1. Optimize code
+	* Decrease the number of object creation by passing in file stream and offset instead of `byte[]`.
+	* Make the array constructed lazly.
+1. Implement more standard message types (Sensor_msgs, Geometry_msgs, etc)
+1. Handle nested none-builtin types in message definitions.
+1. For message with headers, use the header time instead of the message publish time (Could also be an option to be toggled).
+1. Figure out how to handle transformations that exist on the /tf and /tf_static topics. 
