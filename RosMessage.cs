@@ -94,6 +94,18 @@ namespace RosBagConverter
             return fieldData.Item2;
         }
 
+        public T[] ParseArrayField<T>(byte[] data, int arrSize, string type, int offset)
+        {
+            var arr = new T[arrSize];
+            for (var i = 0; i < arrSize; i++)
+            {
+                var parseResult = this.ParseSingleFieldType(data, type, offset: offset);
+                offset += parseResult.Item1;
+                arr[i] = parseResult.Item2;
+            }
+            return arr;
+        }
+
         public dynamic GetField(string indexString)
         {
 
@@ -114,14 +126,28 @@ namespace RosBagConverter
                     // this is a fixed length array
                     arrSize = Int32.Parse(fieldData.Item1.Substring(fieldData.Item1.IndexOf('[') + 1, fieldData.Item1.IndexOf(']') - fieldData.Item1.IndexOf('[') - 1));
                 }
-                var list = new List<dynamic>(arrSize);
-                for (var i = 0; i < arrSize; i++)
+
+
+                switch (arrayType)
                 {
-                    var parseResult = this.ParseSingleFieldType(fieldData.Item2, arrayType, offset: offset);
-                    offset += parseResult.Item1;
-                    list.Add(parseResult.Item2);
+                    case "string": return this.ParseArrayField<string>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "bool": return this.ParseArrayField<bool>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "int8": return this.ParseArrayField<sbyte>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "uint8": return this.ParseArrayField<byte>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "int16": return this.ParseArrayField<short>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "uint16": return this.ParseArrayField<ushort>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "int32": return this.ParseArrayField<int>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "uint32": return this.ParseArrayField<uint>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "int64": return this.ParseArrayField<long>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "uint64": return this.ParseArrayField<ulong>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "float32": return this.ParseArrayField<float>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "float64": return this.ParseArrayField<double>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "time": return this.ParseArrayField<RosTime>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "duration": return this.ParseArrayField<RosDuration>(fieldData.Item2, arrSize, arrayType, offset);
+                    default:
+                        throw new NotSupportedException($"Unknown Type {arrayType}");
+
                 }
-                return list;
             }
             else
             {

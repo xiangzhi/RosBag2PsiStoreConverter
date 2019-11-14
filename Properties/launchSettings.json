@@ -2,7 +2,7 @@
   "profiles": {
     "RosBagConverter": {
       "commandName": "Project",
-      "commandLineArgs": "convert -f C:\\Data\\MIT_data_example.bag -o C:\\Data -n test_image"
+      "commandLineArgs": "convert -f C:\\Data\\psi_test_59_msgs.bag -o C:\\Data -n test_image"
     }
   }
 }

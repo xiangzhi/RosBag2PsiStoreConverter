@@ -14,15 +14,24 @@ namespace RosBagConverter.MessageSerializers
             // TODO I wanted everyone to share a serializer but somehow they currently randomly get deconstructed.
         }
 
-        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, List<RosMessage> messages, string messageType)
+        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
         {
-            switch (messageType)
+            try
             {
-                case ("sensor_msgs/Image"):
-                    DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
-                    return true;
-                default: return false;
+                switch (messageType)
+                {
+                    case ("sensor_msgs/Image"):
+                        DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
+                        return true;
+                    default: return false;
+                }
             }
+            catch (NotSupportedException)
+            {
+                // Not supported default to total copy
+                return false;
+            }
+
         }
 
         private PixelFormat EncodingToPixelFormat(string encoding)
@@ -49,8 +58,7 @@ namespace RosBagConverter.MessageSerializers
             if (format == PixelFormat.Undefined)
             {
                 Console.WriteLine($"Image Encoding Type {encoding} is not supported. Defaulting to writeout");
-                return false;
-                // throw new NotSupportedException($"Image Encoding Type {encoding} is not supported");
+                throw new NotSupportedException($"Image Encoding Type {encoding} is not supported");
             }
 
             using (var sharedImage = ImagePool.GetOrCreate(width, height, PixelFormat.BGRA_32bpp))

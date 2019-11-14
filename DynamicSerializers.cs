@@ -73,6 +73,24 @@ namespace RosBagConverter
                 case RosDuration _:
                     WriteStronglyTyped<RosDuration>(pipeline, topic, messages, store);
                     break;
+                case byte[] _:
+                    WriteStronglyTyped<byte[]>(pipeline, topic, messages, store);
+                    break;
+                case sbyte[] _:
+                    WriteStronglyTyped<sbyte[]>(pipeline, topic, messages, store);
+                    break;
+                case short[] _:
+                    WriteStronglyTyped<short[]>(pipeline, topic, messages, store);
+                    break;
+                case ushort[] _:
+                    WriteStronglyTyped<ushort[]>(pipeline, topic, messages, store);
+                    break;
+                case int[] _:
+                    WriteStronglyTyped<int[]>(pipeline, topic, messages, store);
+                    break;
+                case uint[] _:
+                    WriteStronglyTyped<uint[]>(pipeline, topic, messages, store);
+                    break;
             }
         }
 
@@ -80,14 +98,9 @@ namespace RosBagConverter
         /// Serialize the ROS Message by converting to \psi streams and writing into PsiStore.
         /// If they are common types, they are converted into formats that are more suitable for Psi.
         /// </summary>
-        public void SerializeMessages(Pipeline pipeline, Exporter store, string streamName, List<RosMessage> messages)
+        public void SerializeMessages(Pipeline pipeline, Exporter store, string streamName, string messageType, IEnumerable<RosMessage> messages)
         {
             // If it's a known type, we serialize according to a pre-defined schema
-            string messageType = messages.FirstOrDefault()?.MessageType.Type;
-            if (messageType == null)
-            {
-                return;
-            }
 
             // Loop through a list of known message type
             // Cool to do some reflection on how to automate this.
@@ -105,32 +118,6 @@ namespace RosBagConverter
                     return;
                 }
             }
-
-            /*            else if (messageType.StartsWith("sensor_msgs"))
-                        {
-                            // call the sensor_msgs serializer
-            *//*                if (messageType == "sensor_msgs/Image")
-                            {
-                                BufferWriter dataBuffer = new BufferWriter(128);
-
-                                var ImageSerializer = this.serializers.GetHandler<Image>();
-                                int streamId = streamCounter++;
-                                store.OpenStream(streamId, streamName, true, ImageSerializer.Name);
-                                for (var i = 0; i < messages.Count; i++)
-                                {
-                                    var height = (int)messages[i].GetField("height");
-                                    var width = (int)messages[i].GetField("width");
-                                    var data = ((List<dynamic>)messages[i].GetField("data")).Cast<byte>()
-                                    IntPtr;
-                                    var image = new Image(data, width, height, Microsoft.Psi.Imaging.PixelFormat.BGR_24bpp);
-                                    context.Reset();
-                                    dataBuffer.Reset();
-                                    intSerializer.Serialize(dataBuffer, (int)messages[i].GetField("data"), context);
-                                    this.WriteToStore(store, dataBuffer, messages[i], streamId, i);
-                                }
-
-                            }*//*
-                        }*/
 
             // If it's an unknown field type, we try our best to serialize it by parsing each part
             var messageDefiniton = messages.First().MessageType;
@@ -150,13 +137,13 @@ namespace RosBagConverter
                         // we construct a submessage using the same variables as before. This is to setup a recursive call on the serialization
                         var subMessages = messages.Select(x => x.GetFieldAsRosMessage(this.knowMessageDefinitions[knownType], fieldName)).ToList();
                         // Recursively call the serialization code
-                        this.SerializeMessages(pipeline, store, $"{streamName}.{fieldName}", subMessages);
+                        this.SerializeMessages(pipeline, store, $"{streamName}.{fieldName}", knownType, subMessages);
                     }
                 }
             }
         }
 
-        private void serializeBuiltInFields(Pipeline pipeline, Exporter store, string fieldName, string fieldType, string streamName, List<RosMessage> messages)
+        private void serializeBuiltInFields(Pipeline pipeline, Exporter store, string fieldName, string fieldType, string streamName, IEnumerable<RosMessage> messages)
         {
             BufferWriter dataBuffer = new BufferWriter(128);
 

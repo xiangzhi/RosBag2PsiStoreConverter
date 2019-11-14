@@ -117,7 +117,7 @@ namespace RosBagConverter
             }
         }
 
-        public List<RosMessage> ReadTopic(string name)
+        public IEnumerable<RosMessage> ReadTopic(string name)
         {
             return ReadTopic(new List<string> { name });
         }
@@ -136,7 +136,7 @@ namespace RosBagConverter
             //return null;
         }
 
-        public List<RosMessage> ReadTopic(List<string> topicNames)
+        public IEnumerable<RosMessage> ReadTopic(List<string> topicNames)
         {
             // first figure out which chunk has the information
             List<int> validChunks = new List<int>();
@@ -200,10 +200,10 @@ namespace RosBagConverter
 
                             var msgDef = BagConnections[BitConverter.ToInt32(headerField["conn"], 0)].MessageDefinition;
 
-                           
-                            var msg = new RosMessage(msgDef, headerField, data);
-                            msgList.Add(msg);
-                            // Console.WriteLine(String.Format("{0} -- {1}", msg.Time.ToDateTime(), msg.GetProperty("data")));
+                            // The problem with making it lazy is that the reading operation must be contain in this state machine.
+                            // The current implementation relies on the file read header to remain on the same between calls.
+                            // yield return new RosMessage(msgDef, headerField, data);
+                            msgList.Add(new RosMessage(msgDef, headerField, data));
                         }
                     }
                 }
