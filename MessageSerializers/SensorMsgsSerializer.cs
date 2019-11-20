@@ -23,7 +23,6 @@ namespace RosBagConverter.MessageSerializers
                     case ("sensor_msgs/Image"):
                         DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.ImageToPsiImage(m), m.Time.ToDateTime())), store);
                         return true;
-                    default: return false;
 /*                    case ("sensor_msgs/CompressedImage"):
                         DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
                         return true;*/

@@ -30,54 +30,44 @@ namespace RosBagConverter
 
         private void ParseSingleDefinitonText(List<string> sentences)
         {
+
             foreach (var rawSentence in sentences)
             {
+                // trim the sentence
                 var sentence = rawSentence.Trim();
-                // ignore comments
+                // If the sentence starts with a '#' or is empty then move onto next line
                 if (sentence.StartsWith("#") || sentence.Length == 0)
                 {
                     continue;
                 }
 
-                var fields = new List<string>();
-                // split the data by spaces
-                string curr_str = "";
-                foreach(var c in sentence)
+                // split the sentence by space
+                var sentence_array = sentence.Split(' ').Where(m => m.Length > 0).ToArray();
+
+                // check if this sentence is an constant
+                bool valid = true;
+                foreach(var s in sentence_array)
                 {
-                    if (c == '=')
-                    {
-                        // This means this is a constant
-                        // ignore for now
-                        curr_str = "";
-                        break;
-                    }
-                    if (c == ' ')
-                    {
-                        if (curr_str.Length > 0)
-                        {
-                            fields.Add(curr_str);
-                            curr_str = "";
-                        }
-                        continue;
-                    }
-                    if (c == '#')
+                    // ignore if its a comment
+                    if (s.Contains('#'))
                     {
                         break;
                     }
-                    curr_str += c;
-                }
-                if (curr_str.Length > 0)
-                {
-                    fields.Add(curr_str);
+                    // if there is an equal sign showing up before any comments
+                    // it is constant and should be ignored.
+                    if (s.Contains('='))
+                    {
+                        valid = false;
+                        break;
+                    }
                 }
 
-                if (fields.Count() < 2 || fields.Contains("="))
+                if (!valid)
                 {
                     continue;
                 }
-                this.Properties.Add(new Tuple<string, string>(fields[0], fields[1]));
-                //PropertyTypeMap.Add(fields[1], fields[0]);
-                // Given the type, figure out the offset
+                // add the field
+                this.Properties.Add(new Tuple<string, string>(sentence_array[0], sentence_array[1]));
             }
         }
 

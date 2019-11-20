@@ -2,7 +2,7 @@
   "profiles": {
     "RosBagConverter": {
       "commandName": "Project",
-      "commandLineArgs": "convert -f C:\\Data\\psi_baxter2.bag -o C:\\Data -n baxter_store -t /cameras/head_camera/image"
+      "commandLineArgs": "convert -f C:\\Data\\psi_baxter2.bag -o C:\\Data -n baxter_store"
     }
   }
 }

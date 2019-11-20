@@ -32,7 +32,7 @@ namespace RosBagConverter
             var topicList = opts.Topics.Count() > 0 ? opts.Topics : bag.TopicList;
 
             // create a psi store
-            using (var pipeline = Pipeline.Create())
+            using (var pipeline = Pipeline.Create(true))
             {
                 var store = Store.Create(pipeline, opts.Name, opts.Output);
                 var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions);
@@ -42,6 +42,8 @@ namespace RosBagConverter
                     var messages = bag.ReadTopic(topic);
                     dynamicSerializer.SerializeMessages(pipeline, store, topic, messageDef.Type, messages);
                 }
+
+                store.Write(pipeline.Diagnostics, "diagnostics");
 
                 pipeline.Run();
             }
