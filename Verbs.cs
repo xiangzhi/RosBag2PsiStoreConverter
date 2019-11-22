@@ -13,7 +13,7 @@ namespace RosBagConverter
         internal class InfoOption
         {
             [Option('f', "file", Required = true, HelpText = "Path to first Rosbag")]
-            public string Input { get; set; }
+            public IEnumerable<string> Input { get; set; }
         }
 
         [Verb("convert", HelpText = "Return Informtion on the RosBag")]

@@ -8,7 +8,6 @@ namespace RosBagConverter
 {
     public class RosMessageDefinition
     {
-        private Dictionary<string, string> PropertyTypeMap = new Dictionary<string, string>();
         private List<Tuple<string, string>> Properties = new List<Tuple<string, string>>();
         public Dictionary<string, RosMessageDefinition> KnownDefinitions;
 
