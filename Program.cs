@@ -28,11 +28,11 @@ namespace RosBagConverter
 
         private static int ConvertBag(Verbs.ConvertOptions opts)
         {
-            var bag = new RosBag(opts.Input);
+            var bag = new RosBag(opts.Input.ToList());
             var topicList = opts.Topics.Count() > 0 ? opts.Topics : bag.TopicList;
 
             // create a psi store
-            using (var pipeline = Pipeline.Create(true))
+            using (var pipeline = Pipeline.Create())
             {
                 var store = Store.Create(pipeline, opts.Name, opts.Output);
                 var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions);
@@ -43,7 +43,7 @@ namespace RosBagConverter
                     dynamicSerializer.SerializeMessages(pipeline, store, topic, messageDef.Type, messages);
                 }
 
-                store.Write(pipeline.Diagnostics, "diagnostics");
+                // store.Write(pipeline.Diagnostics, "diagnostics");
 
                 pipeline.Run();
             }
@@ -54,9 +54,11 @@ namespace RosBagConverter
         private static int InfoOnBag(Verbs.InfoOption opts)
         {
             // create bag object
-            var bag = new RosBag(opts.Input);
+            var bag = new RosBag(opts.Input.ToList());
 
-            Console.WriteLine("Info for Bag");
+            Console.WriteLine("Info for Bags");
+            Console.WriteLine($"Earliest Message Time:{bag.StartTime}");
+            Console.WriteLine($"Latest Message Time:{bag.EndTime}");
             Console.WriteLine("Topic List:");
             foreach(var topic in bag.TopicList)
             {

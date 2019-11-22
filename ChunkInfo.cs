@@ -11,8 +11,10 @@ namespace RosBagConverter
         public ChunkInfo(Dictionary<string, byte[]> fields, byte[] data)
         {
 
-            StartTime = BitConverter.ToInt64(fields["start_time"], 0);
-            EndTime = BitConverter.ToInt64(fields["end_time"], 0);
+            //StartTime = BitConverter.ToInt64(fields["start_time"], 0);
+            StartTime = RosTime.FromRosBytes(fields["start_time"]);
+            //EndTime = BitConverter.ToInt64(fields["end_time"], 0);
+            EndTime = RosTime.FromRosBytes(fields["end_time"]);
             ChunkPos = BitConverter.ToInt64(fields["chunk_pos"], 0);
             Count = BitConverter.ToInt32(fields["count"], 0);
 
@@ -25,8 +27,8 @@ namespace RosBagConverter
         }
 
         public long ChunkPos { get; private set; }
-        public long StartTime { get; private set; }
-        public long EndTime { get; private set; }
+        public RosTime StartTime { get; private set; }
+        public RosTime EndTime { get; private set; }
         public int  Count { get; private set; }
 
         public Dictionary<int, int> MessageCount { get; private set; } = new Dictionary<int, int>();

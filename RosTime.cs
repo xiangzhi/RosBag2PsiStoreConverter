@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RosBagConverter
 {
-    public class RosTime
+    public class RosTime : IComparable
     {
         public RosTime(UInt32 secs, UInt32 nSecs)
         {
@@ -19,6 +19,7 @@ namespace RosBagConverter
             return RosTime.FromRosBytes(timeBytes, 0);
         }
 
+
         public static RosTime FromRosBytes(byte[] timeBytes, int offset)
         {
             return new RosTime(BitConverter.ToUInt32(timeBytes, offset), BitConverter.ToUInt32(timeBytes, offset + 4));
@@ -28,6 +29,20 @@ namespace RosBagConverter
         {
             // Each tick is about 100 Nano Seconds
             return DateTimeOffset.FromUnixTimeSeconds(Seconds).DateTime + TimeSpan.FromTicks(NanoSeconds / 100);
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj == null) return 1;
+            RosTime otherTime = obj as RosTime;
+            if (otherTime.Seconds == this.Seconds)
+            {
+                return (int)this.NanoSeconds - (int)otherTime.NanoSeconds;
+            }
+            else
+            {
+                return (int)this.Seconds - (int)otherTime.Seconds;
+            }
         }
 
         public UInt32 Seconds { get; private set; }
