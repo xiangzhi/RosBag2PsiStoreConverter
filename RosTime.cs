@@ -19,6 +19,7 @@ namespace RosBagConverter
             return RosTime.FromRosBytes(timeBytes, 0);
         }
 
+
         public static RosTime FromRosBytes(byte[] timeBytes, int offset)
         {
             return new RosTime(BitConverter.ToUInt32(timeBytes, offset), BitConverter.ToUInt32(timeBytes, offset + 4));

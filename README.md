@@ -6,7 +6,7 @@ Licensed under the MIT license.
 This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore).
 
 Some properties of the tool:
-* [Coming] If the message has a header in the root level, the message's originating time is set to the header time & the message time will be the time the message was published. If the message does not have a header, both originate and message time are set to the message publish time.
+* [Coming] If the message has a header in the root level, the message's originating time is set to the header time & not the message publish time.
 * Does not rely on any external Ros message definitions, the tool figures out the fields from the message definitions in the RosBag.
 * Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image) *Currently only some std_msgs implemented* 
 * For standard messsages not implemented or custom ros messages, the tool deconstruct them into their [ros message built-in types](http://wiki.ros.org/msg)
@@ -32,13 +32,27 @@ This list out the topics in the given RosBag.
 Example:
 ```
 RosBagConverter.exe info -f C:\Data\psi_test.bag
+
+Ros Bag to PsiStore Converter
+Info for Bags
+Earliest Message Time:11/12/2019 10:28:14 PM
+Latest Message Time:11/12/2019 10:28:15 PM
+Topic List:
+/robot/joint_names
+/tf_static
+/robot/joint_states
+/tf
+/kinect2/hd/camera_info
+/kinect2/hd/image_color/compressed
+/kinect2/hd/image_depth_rect/compressed
+/kinect2/hd/points
 ```
 
 #### Convert
 `RosBagConverter.exe convert`
 Converts the rosbag to a PsiStore. You can specified which topic to be converted
 ```
-  -f, --file      Required. Path to first Rosbag
+  -f, --file      Required. Either directory holding bag files, list of bag files or a single bag files
 
   -o, --output    Required. Path to where to store PsiStore
 
@@ -48,18 +62,25 @@ Converts the rosbag to a PsiStore. You can specified which topic to be converted
 ```
 Example:
 ```
-RosBagConverter.exe convert -f C:\Data\psi_test_59_msgs.bag -o C:\Data -n t1 -t \rosout
+RosBagConverter.exe convert -f C:\Data\psi_example1.bag -o C:\Data -n t1 -t \rosout
 ```
 ```
-RosBagConverter.exe convert -f C:\Data\psi_test_59_msgs.bag -o C:\Data -n t1 -t --topics /text /rosout
+RosBagConverter.exe convert -f C:\Data\psi_example1.bag C:\Data\psi_example2.bag -o C:\Data -n t2 --topics /text /rosout
+```
+```
+RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
+## ChangeLog:
+* 11/21
+	* Rewrite the RosBag component to lazily read from the ROS Bags.
+	* Refactor code.
+	* Allow the reading of multiple ros bag files as long as they are ordered correctly.
+
 ## TODO
-1. Handle RosBag Files that are split into multiple files. Currently, you can just inspect each file individually.
 1. Optimize code
 	* Decrease the number of object creation by passing in file stream and offset instead of `byte[]`.
-	* Make the array constructed lazly.
+	* Convert the RosBag Module into a ISourceComponent. 
 1. Implement more standard message types (Sensor_msgs, Geometry_msgs, etc)
-1. Handle nested none-builtin types in message definitions.
 1. For message with headers, use the header time instead of the message publish time (Could also be an option to be toggled).
 1. Figure out how to handle transformations that exist on the /tf and /tf_static topics. 

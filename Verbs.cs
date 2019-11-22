@@ -20,7 +20,7 @@ namespace RosBagConverter
         internal class ConvertOptions
         {
             [Option('f', "file", Required = true, HelpText = "Path to first Rosbag")]
-            public string Input { get; set; }
+            public IEnumerable<string> Input { get; set; }
 
             [Option('o', "output", Required = true, HelpText = "Path to where to store PsiStore")]
             public string Output { get; set; }
