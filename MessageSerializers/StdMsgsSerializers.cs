@@ -30,7 +30,16 @@ namespace RosBagConverter.MessageSerializers
                 case "std_msgs/Bool":
                     DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField("data"), m.Time.ToDateTime())), store);
                     return true;
+                case "std_msgs/Header":
+                    // For header, return time for now
+                    DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => 
+                    {
+                        var headerTime = m.GetField("stamp") as RosTime;
+                        return ((dynamic) headerTime.ToDateTime(), m.Time.ToDateTime());
+                    }), store);
+                    return true;
                 default: return false;
+
             }
         }
     }

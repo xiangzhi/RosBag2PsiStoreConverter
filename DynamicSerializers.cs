@@ -12,6 +12,7 @@ namespace RosBagConverter
     {
         private StdMsgsSerializers stdMsgsSerializer;
         private SensorMsgsSerializer sensorMsgsSerializer;
+        private GeometryMsgsSerializer geometryMsgsSerializer;
         private Dictionary<string, RosMessageDefinition> knowMessageDefinitions;
 
         public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions)
@@ -19,6 +20,7 @@ namespace RosBagConverter
             this.knowMessageDefinitions = knownDefinitions;
             this.stdMsgsSerializer = new StdMsgsSerializers();
             this.sensorMsgsSerializer = new SensorMsgsSerializer();
+            this.geometryMsgsSerializer = new GeometryMsgsSerializer();
         }
 
         public static void WriteStronglyTyped<T>(Pipeline pipeline, string topic, IEnumerable<(dynamic, DateTime)> messages, Exporter store)
@@ -68,10 +70,10 @@ namespace RosBagConverter
                     WriteStronglyTyped<double>(pipeline, topic, messages, store);
                     break;
                 case RosTime _:
-                    WriteStronglyTyped<RosTime>(pipeline, topic, messages, store);
+                    WriteStronglyTyped<DateTime>(pipeline, topic, messages.Select(m => ((dynamic)(m.Item1 as RosTime).ToDateTime(), m.Item2)), store);
                     break;
                 case RosDuration _:
-                    WriteStronglyTyped<RosDuration>(pipeline, topic, messages, store);
+                    WriteStronglyTyped<TimeSpan>(pipeline, topic, messages.Select(m => ((dynamic)(m.Item1 as RosDuration).ToTimeSpan(), m.Item2)), store);
                     break;
                 case byte[] _:
                     WriteStronglyTyped<byte[]>(pipeline, topic, messages, store);
@@ -90,6 +92,9 @@ namespace RosBagConverter
                     break;
                 case uint[] _:
                     WriteStronglyTyped<uint[]>(pipeline, topic, messages, store);
+                    break;
+                case RosHeader _:
+                    WriteStronglyTyped<DateTime>(pipeline, topic, messages.Select(m => ((dynamic)(m.Item1 as RosHeader).Time.ToDateTime(), m.Item2)), store);
                     break;
             }
         }
@@ -114,6 +119,13 @@ namespace RosBagConverter
             else if (messageType.StartsWith("sensor_msgs"))
             {
                 if (this.sensorMsgsSerializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
+                {
+                    return;
+                }
+            }
+            else if (messageType.StartsWith("geometry_msgs"))
+            {
+                if (this.geometryMsgsSerializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
                 {
                     return;
                 }

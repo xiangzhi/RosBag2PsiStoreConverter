@@ -310,6 +310,25 @@ namespace RosBagConverter
         }
 
         /// <summary>
+        /// A dictoionary of all topics and how many messages in each topic
+        /// </summary>
+/*        public Dictionary<string, int> MessageCounts
+        {
+            get
+            {
+                // get a list of topics
+                var topics = this.TopicList;
+                // loop through them to find
+                foreach(var )
+
+
+                return EachChunkInfoList.Values.Select(m => m.Select(x => x.MessageCount)).SelectMany(x => x).OrderBy(x => x).First().ToDateTime();
+
+                return EachBagConnections.Values.Select(m => m.Values.Select(x => x.Topic)).SelectMany(x => x);
+            }
+        }*/
+
+        /// <summary>
         /// The earliest timestamp of all message in the RosBag(s)
         /// </summary>
         public DateTime StartTime

@@ -57,7 +57,7 @@ namespace RosBagConverter.MessageSerializers
 
             // convert formats
             string encoding = (string)message.GetField("encoding");
-            var format = EncodingToPixelFormat(encoding);
+            var format = this.EncodingToPixelFormat(encoding);
             if (format == PixelFormat.Undefined)
             {
                 Console.WriteLine($"Image Encoding Type {encoding} is not supported. Defaulting to writeout");
