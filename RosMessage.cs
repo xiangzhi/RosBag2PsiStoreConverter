@@ -86,7 +86,7 @@ namespace RosBagConverter
             else
             {
                 // TODO Figure out a way to handle nested types
-                throw new NotSupportedException($"Unable to handle nested non-built in types: {type}")
+                throw new NotSupportedException($"Unable to handle nested non-built in types: {type}");
             }
         }
 
