@@ -58,13 +58,16 @@ namespace RosBagConverter
             // create bag object
             var bag = new RosBag(opts.Input.ToList());
 
+            Console.WriteLine("---------------------");
             Console.WriteLine("Info for Bags");
+            Console.WriteLine("---------------------");
             Console.WriteLine($"Earliest Message Time:{bag.StartTime}");
             Console.WriteLine($"Latest Message Time:{bag.EndTime}");
-            Console.WriteLine("Topic List:");
-            foreach(var topic in bag.TopicList)
+            Console.WriteLine(string.Format("{0,-20}{1,-10}","Name", "Type"));
+            Console.WriteLine("-----------------------------------------");
+            foreach(var topic in bag.TopicTypeList)
             {
-                Console.WriteLine(topic);
+                Console.WriteLine(string.Format("{0,-20}{1,10}",topic.Item1, topic.Item2));
             }
             return 1;
         }

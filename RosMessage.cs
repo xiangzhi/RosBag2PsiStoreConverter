@@ -85,8 +85,9 @@ namespace RosBagConverter
             }
             else
             {
-                // TODO Figure out a way to handle nested types
-                throw new NotSupportedException($"Unable to handle nested non-built in types: {type}");
+                // Currently, we return the field as another ROS Message if its a nested type.
+                // This shouldn't happen in our usecase 
+                return (dynamic) this.GetFieldAsRosMessage(this.MessageType.KnownDefinitions[type], type);
             }
         }
 

@@ -108,7 +108,6 @@ namespace RosBagConverter
             // If it's a known type, we serialize according to a pre-defined schema
 
             // Loop through a list of known message type
-            // Cool to do some reflection on how to automate this.
             if (messageType.StartsWith("std_msgs"))
             {
                 if (this.stdMsgsSerializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
@@ -133,9 +132,10 @@ namespace RosBagConverter
 
             // If it's an unknown field type, we try our best to serialize it by parsing each part
             var messageDefiniton = messages.First().MessageType;
+            // Go through each field in the message
             foreach (var fieldName in messageDefiniton.FieldList)
             {
-                //Try to serialize build in types
+                //If its a built in type, we serialize it
                 if (RosMessageDefinition.IsBuiltInType(messageDefiniton.GetFieldType(fieldName)))
                 {
                     this.serializeBuiltInFields(pipeline, store, fieldName, messageDefiniton.GetFieldType(fieldName), $"{streamName}.{fieldName}", messages);

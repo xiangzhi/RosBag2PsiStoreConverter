@@ -177,6 +177,11 @@ namespace RosBagConverter
                     nextRecordOffset = dataOffset + dataLen;
                 }
             }
+
+            // Pre-calculate offsets
+            foreach(var msgDef in this.KnownRosMessageDefinitions){
+                msgDef.Value.PreCalculateOffsets();
+            }
         }
 
 
@@ -308,6 +313,15 @@ namespace RosBagConverter
                 return EachBagConnections.Values.Select(m => m.Values.Select(x => x.Topic)).SelectMany(x => x).Distinct().ToList();
             }
         }
+
+        public List<Tuple<string, string>> TopicTypeList
+        {
+            get
+            {
+                return EachBagConnections.Values.Select(m => m.Values.Select(x => new Tuple<string,string>(x.Topic, x.Type))).SelectMany(x => x).Distinct().ToList();
+            }
+        }
+
 
         /// <summary>
         /// A dictoionary of all topics and how many messages in each topic

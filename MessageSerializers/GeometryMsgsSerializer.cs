@@ -30,7 +30,7 @@ namespace RosBagConverter.MessageSerializers
                             return ((dynamic)new Point3D(m.GetField("x"), m.GetField("y"), m.GetField("z")), m.Time.ToDateTime());
                         }), store);
                         return true;
-/*                    case ("geometry_msgs/PointStamped"):
+                    case ("geometry_msgs/PointStamped"):
                         DynamicSerializers.WriteStronglyTyped<Point3D>(pipeline, streamName, messages.Select(m =>
                         {
                             // var header = m.GetField("header");
@@ -38,7 +38,7 @@ namespace RosBagConverter.MessageSerializers
                             // convert to point
                             return ((dynamic)new Point3D(pointObject.GetField("x"), pointObject.GetField("y"), pointObject.GetField("z")), m.Time.ToDateTime());
                         }), store);
-                        return true;*/
+                        return true;
                     default: return false;
                 }
             }

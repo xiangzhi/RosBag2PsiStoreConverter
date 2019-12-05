@@ -15,12 +15,18 @@ namespace RosBagConverter
         {
             this.Type = typeName;
             this.KnownDefinitions = knownDef;
+            // Parse the ROS Message Defintions
             this.parseDefinitionText(definition);
-
+            // Add to the known list
+            if (!this.KnownDefinitions.ContainsKey(this.Type))
+            {
+                this.KnownDefinitions.Add(this.Type, this);
+            }
         }
+
         public RosMessageDefinition(List<string> definition)
         {
-            // the first line tells us the typ
+            // the first line tells us the type
             var firstLine = definition[0];
             this.Type = firstLine.Substring(5, firstLine.Length - 5);
             definition.RemoveAt(0);
@@ -40,7 +46,7 @@ namespace RosBagConverter
                     continue;
                 }
 
-                // split the sentence by space
+                // split the sentence by space and ignore all items that are spaces
                 var sentence_array = sentence.Split(' ').Where(m => m.Length > 0).ToArray();
 
                 // check if this sentence is an constant
@@ -52,6 +58,7 @@ namespace RosBagConverter
                     {
                         break;
                     }
+
                     // if there is an equal sign showing up before any comments
                     // it is constant and should be ignored.
                     if (s.Contains('='))
@@ -77,9 +84,11 @@ namespace RosBagConverter
             if (sentences.Contains(definitionSplit))
             {
                 // This means there are multiple definitions
+                // The first one is the definition of this message type
                 this.ParseSingleDefinitonText(sentences.Take(sentences.IndexOf(definitionSplit)).ToList());
                 sentences.RemoveRange(0, sentences.IndexOf(definitionSplit) + 1);
 
+                // loops through all the dependencies definitions
                 while (sentences.Contains(definitionSplit))
                 {
                     var subSentences = sentences.Take(sentences.IndexOf(definitionSplit)).ToList();
@@ -113,7 +122,9 @@ namespace RosBagConverter
 
         public int GetOffset(byte[] rawData, string indexString)
         {
-            int offset = 0; //This is the size of the message
+            int offset = 0;
+            
+            // Loop through each of the properties and calculate its size
             foreach(var field in this.Properties)
             {
                 if (field.Item2 == indexString)
@@ -162,6 +173,8 @@ namespace RosBagConverter
         private int GetSize(byte[] rawData, int offset)
         {
             int total_size = 0;
+
+            // We go through each field and get the size of the properties.
             foreach (var field in this.Properties)
             {
                 var fieldSize = this.GetSizeOfProperty(rawData, field.Item1, offset);
@@ -200,13 +213,15 @@ namespace RosBagConverter
                 case "Header":
                     offset += 4; // Sequence ID
                     offset += 8; // time
-                                  // figure out the size of the string
+                                 // figure out the size of the string
                     var frameStrLength = BitConverter.ToInt32(rawData, offset);
                     return 4 + 8 + frameStrLength + 4;
                 case "string":
                     var strLength = BitConverter.ToInt32(rawData, offset);
                     return 4 + strLength;
                 default:
+
+                    // Check if the type is an array
                     if (fieldType.Contains("["))
                     {
                         int total_size = 0;
@@ -232,27 +247,132 @@ namespace RosBagConverter
                     }
                     else
                     {
+                        // Check if its a known types that were encoded at the beginning of the RosBag
                         if (this.KnownDefinitions.ContainsKey(fieldType))
                         {
                             return this.KnownDefinitions[fieldType].GetSize(rawData, offset);
                         }
+                        // TODO: Check why this line exist here
                         foreach (var key in this.KnownDefinitions.Keys)
                         {
                             if (key.EndsWith(fieldType)){
                                 return this.KnownDefinitions[key].GetSize(rawData, offset);
                             }
                         }
-                        throw new NotImplementedException("Unknown Type!!");
+                        throw new NotImplementedException($"Unknown Type:{fieldType}");
                     }
             }
         }
 
+        private int GetSizeOfNonArrayField(string singleFieldType){
+            switch (singleFieldType)
+            {
+                case "bool":
+                case "int8":
+                case "uint8":
+                case "char":
+                case "byte":
+                    return 1;
+                case "int16":
+                case "uint16":
+                    return 2;
+                case "int32":
+                case "uint32":
+                case "float32":
+                    return 4;
+                case "time":
+                case "duration":
+                case "int64":
+                case "uint64":
+                case "float64":
+                    return 8;
+                case "string":
+                case "header":
+                    return -1;
+                default:
+                    // Check if this is a nested message type
+                    if(this.KnownDefinitions.ContainsKey(singleFieldType)){
+                        // If we haven't count it yet, count it
+                        if (!this.KnownDefinitions[singleFieldType].PreCalculatedFieldSize){
+                            this.KnownDefinitions[singleFieldType].PreCalculateOffsets();
+                        }
+                        // check if it has a fixed size
+                        if (this.KnownDefinitions[singleFieldType].HasStaticSize){
+                            return this.KnownDefinitions[singleFieldType].MessageSize;
+                        }
+                    }
+                    return -1;
+            }
+        }
+
+        
+        // Whether this ROS Message has a static field size or not
+        public bool HasStaticSize { get; private set; } = false;
+        public bool PreCalculatedFieldSize { get; private set; } = false;
+        public int MessageSize { get; private set; } = -1;
+        public Dictionary<string, int> PropertyOffsets {get; private set;} = new Dictionary<string, int>();
+
+        public bool PreCalculateOffsets(){
+
+            // check if we already pre-calculated this field.
+            if (this.PreCalculatedFieldSize){
+                return this.HasStaticSize;
+            }
+
+            // mark that we have start precalculating the message size.
+            this.PreCalculatedFieldSize = true;   
+
+            int offset = 0;
+            foreach(var properties in this.Properties){
+                // Add the current property to the list
+                PropertyOffsets.Add(properties.Item2, offset);
+
+                // Now we calculate the offsets
+                // First check if its an array
+                if(properties.Item1.Contains("[")){
+                    // check if its a varied array or fixed size one
+                    if (properties.Item1.Contains("[]")){
+                        // The size could only be determined at runtime.
+                        this.HasStaticSize = false;
+                        return false;
+                    }
+                    else{
+                        // get the length of array
+                        var arrSize = Int32.Parse(properties.Item1.Substring(properties.Item1.IndexOf('[') + 1, properties.Item1.IndexOf(']') - properties.Item1.IndexOf('[') - 1));
+                        var singleFieldType = properties.Item1.Substring(0, properties.Item1.IndexOf('['));
+
+                        int fieldSize = this.GetSizeOfNonArrayField(singleFieldType);
+                        if(fieldSize == -1){
+                            // The size could only be determined at runtime.
+                            this.HasStaticSize = false;
+                            continue;
+                        }
+                        offset += (fieldSize * arrSize);
+                    }
+                }
+                else{
+                    // Not an array
+                    // Check if it has a fixed message size
+                    var fieldSize = this.GetSizeOfNonArrayField(properties.Item1);
+                }
+            }
+            this.HasStaticSize = true;
+            return true;
+        }
+
+
         public Tuple<string, byte[]> GetData(byte[] rawData, string indexString)
         {
+            // Get the field type of the index string.
             var fieldType = this.Properties.Where(e => e.Item2 == indexString).First().Item1;
+
+            // find the offset to the field in the given mesage data.
             var offset = this.GetOffset(rawData, indexString);
+
+            // Calculate the field size of the data
             var fieldSize = this.GetSizeOfProperty(rawData, fieldType, offset);
 
+            // extract and return the bytes of the field.
             return new Tuple<string, byte[]>(fieldType, rawData.Skip(offset).Take(fieldSize).ToArray());
         }
 
@@ -260,5 +380,6 @@ namespace RosBagConverter
         {
             return this.Properties.Where(e => e.Item2 == indexString).First().Item1;
         }
+        
     }
 }
