@@ -28,6 +28,7 @@ namespace RosBagConverter
 
         private static int ConvertBag(Verbs.ConvertOptions opts)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             var bag = new RosBag(opts.Input.ToList());
             var topicList = opts.Topics.Count() > 0 ? opts.Topics : bag.TopicList;
 
@@ -49,6 +50,8 @@ namespace RosBagConverter
 
                 pipeline.Run();
             }
+            watch.Stop();
+            Console.WriteLine($"Total elapsed time:{watch.ElapsedMilliseconds}");
 
             return 1;
         }

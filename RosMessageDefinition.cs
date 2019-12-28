@@ -24,8 +24,9 @@ namespace RosBagConverter
             }
         }
 
-        public RosMessageDefinition(List<string> definition)
+        public RosMessageDefinition(List<string> definition, Dictionary<string, RosMessageDefinition> knownDef)
         {
+            this.KnownDefinitions = knownDef;
             // the first line tells us the type
             var firstLine = definition[0];
             this.Type = firstLine.Substring(5, firstLine.Length - 5);
@@ -92,14 +93,14 @@ namespace RosBagConverter
                 while (sentences.Contains(definitionSplit))
                 {
                     var subSentences = sentences.Take(sentences.IndexOf(definitionSplit)).ToList();
-                    var loopRosDef = new RosMessageDefinition(subSentences);
+                    var loopRosDef = new RosMessageDefinition(subSentences, this.KnownDefinitions);
                     if (!this.KnownDefinitions.ContainsKey(loopRosDef.Type))
                     {
                         this.KnownDefinitions.Add(loopRosDef.Type, loopRosDef);
                     }
                     sentences.RemoveRange(0, sentences.IndexOf(definitionSplit) + 1);
                 }
-                var newRosDef = new RosMessageDefinition(sentences);
+                var newRosDef = new RosMessageDefinition(sentences, this.KnownDefinitions);
                 if (!this.KnownDefinitions.ContainsKey(newRosDef.Type))
                 {
                     this.KnownDefinitions.Add(newRosDef.Type, newRosDef);
@@ -345,7 +346,7 @@ namespace RosBagConverter
                         if(fieldSize == -1){
                             // The size could only be determined at runtime.
                             this.HasStaticSize = false;
-                            continue;
+                            return false;
                         }
                         offset += (fieldSize * arrSize);
                     }
@@ -354,6 +355,13 @@ namespace RosBagConverter
                     // Not an array
                     // Check if it has a fixed message size
                     var fieldSize = this.GetSizeOfNonArrayField(properties.Item1);
+                    // make sure it has a valid size
+                    if (fieldSize == -1)
+                    {
+                        // The size could only be determined at runtime.
+                        this.HasStaticSize = false;
+                        return false;
+                    }
                 }
             }
             this.HasStaticSize = true;
