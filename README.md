@@ -34,18 +34,27 @@ Example:
 RosBagConverter.exe info -f C:\Data\psi_test.bag
 
 Ros Bag to PsiStore Converter
+---------------------
 Info for Bags
+---------------------
 Earliest Message Time:11/12/2019 10:28:14 PM
 Latest Message Time:11/12/2019 10:28:15 PM
-Topic List:
-/robot/joint_names
-/tf_static
-/robot/joint_states
-/tf
-/kinect2/hd/camera_info
-/kinect2/hd/image_color/compressed
-/kinect2/hd/image_depth_rect/compressed
-/kinect2/hd/points
+Name                                              Type
+--------------------------------------------------------------
+/cameras/head_camera/camera_info                  sensor_msgs/CameraInfo
+/cameras/right_hand_camera/camera_info            sensor_msgs/CameraInfo
+/robot/joint_names                                MotorControlMsgs/StringArray
+/tf_static                                        tf2_msgs/TFMessage
+/robot/accelerometer/left_accelerometer/state     sensor_msgs/Imu
+/robot/accelerometer/right_accelerometer/state    sensor_msgs/Imu
+/robot/joint_states                               sensor_msgs/JointState
+/tf                                               tf2_msgs/TFMessage
+/kinect2/hd/camera_info                           sensor_msgs/CameraInfo
+/cameras/right_hand_camera/image                  sensor_msgs/Image
+/kinect2/hd/image_color/compressed                sensor_msgs/CompressedImage
+/cameras/head_camera/image                        sensor_msgs/Image
+/kinect2/hd/image_depth_rect/compressed           sensor_msgs/CompressedImage
+/kinect2/hd/points                                sensor_msgs/PointCloud2
 ```
 
 #### Convert
@@ -72,6 +81,10 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
+* 12/28
+	* bug fixed to make sure it works
+	* 30% faster on complex ROS BAGs by precalculating offsets of fields.
+	* Showed message types in Info screen
 * 11/21
 	* Rewrite the RosBag component to lazily read from the ROS Bags.
 	* Refactor code.
@@ -79,7 +92,6 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 
 ## TODO
 1. Optimize code
-	* Decrease the number of object creation by passing in file stream and offset instead of `byte[]`.
 	* Convert the RosBag Module into a ISourceComponent. 
 1. Implement more standard message types (Sensor_msgs, Geometry_msgs, etc)
 1. For message with headers, use the header time instead of the message publish time (Could also be an option to be toggled).

@@ -66,11 +66,11 @@ namespace RosBagConverter
             Console.WriteLine("---------------------");
             Console.WriteLine($"Earliest Message Time:{bag.StartTime}");
             Console.WriteLine($"Latest Message Time:{bag.EndTime}");
-            Console.WriteLine(string.Format("{0,-20}{1,-10}","Name", "Type"));
-            Console.WriteLine("-----------------------------------------");
+            Console.WriteLine(string.Format("{0,-50}{1,-10}","Name", "Type"));
+            Console.WriteLine("--------------------------------------------------------------");
             foreach(var topic in bag.TopicTypeList)
             {
-                Console.WriteLine(string.Format("{0,-20}{1,10}",topic.Item1, topic.Item2));
+                Console.WriteLine(string.Format("{0,-50}{1,10}",topic.Item1.Substring(0, Math.Min(50, topic.Item1.Length)), topic.Item2));
             }
             return 1;
         }
