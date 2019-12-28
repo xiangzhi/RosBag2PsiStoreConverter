@@ -288,7 +288,7 @@ namespace RosBagConverter
                                     byte[] headerBytes = new byte[headerLen];
                                     fs.Read(headerBytes, 0, headerLen);
                                     headerField = Utils.ParseHeaderData(headerBytes);
-                                    // read data
+                                    // read data len
                                     fs.Read(intBytes, 0, 4);
                                     var dataLen = BitConverter.ToInt32(intBytes, 0);
                                     // read data
@@ -324,23 +324,36 @@ namespace RosBagConverter
 
 
         /// <summary>
-        /// A dictoionary of all topics and how many messages in each topic
+        /// A dictionary of all topics and how many messages in each topic
         /// </summary>
-/*        public Dictionary<string, int> MessageCounts
+        /// 
+        public Dictionary<string, int> MessageCounts
         {
             get
             {
-                // get a list of topics
-                var topics = this.TopicList;
-                // loop through them to find
-                foreach(var )
-
-
-                return EachChunkInfoList.Values.Select(m => m.Select(x => x.MessageCount)).SelectMany(x => x).OrderBy(x => x).First().ToDateTime();
-
-                return EachBagConnections.Values.Select(m => m.Values.Select(x => x.Topic)).SelectMany(x => x);
+                // combined all the chunk information into one
+                var messageCounter = new Dictionary<string, int>();
+                foreach(var chunkInfoList in this.EachChunkInfoList)
+                {
+                    foreach(var chunkInfo in chunkInfoList.Value)
+                    {
+                        foreach(var msgInfo in chunkInfo.MessageCount)
+                        {
+                            var topicName = this.EachBagConnections.Values.Where(m => m.ContainsKey(msgInfo.Key)).First()[msgInfo.Key].Topic;
+                            if (messageCounter.ContainsKey(topicName))
+                            {
+                                messageCounter[topicName] += msgInfo.Value;
+                            }
+                            else
+                            {
+                                messageCounter[topicName] = msgInfo.Value;
+                            }
+                        }
+                    }
+                }
+                return messageCounter;
             }
-        }*/
+        }
 
         /// <summary>
         /// The earliest timestamp of all message in the RosBag(s)
