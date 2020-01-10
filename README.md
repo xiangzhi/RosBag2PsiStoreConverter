@@ -1,9 +1,7 @@
 ﻿# RosBag to PsiStore Converter
 Licensed under the MIT license.
 
-*This is still work in progress & a lot stuff still to be added*
-
-This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore).
+This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore). Works on both Linux* and Window machines.
 
 Some properties of the tool:
 * [Coming] If the message has a header in the root level, the message's originating time is set to the header time & not the message publish time.
@@ -81,11 +79,15 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
-* 12/28
+* 1/9/2020
+	* Added a bunch of geometry_msgs definition.
+	* fixed the problem of chain lookup of fields in serialization.
+	* changed to .NET core to run on Linux machines.
+* 12/28/2019
 	* bug fixed to make sure it works
 	* 30% faster on complex ROS BAGs by precalculating offsets of fields.
 	* Showed message types in Info screen
-* 11/21
+* 11/21/2019
 	* Rewrite the RosBag component to lazily read from the ROS Bags.
 	* Refactor code.
 	* Allow the reading of multiple ros bag files as long as they are ordered correctly.

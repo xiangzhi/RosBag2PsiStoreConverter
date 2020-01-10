@@ -23,7 +23,29 @@ namespace RosBagConverter
             this.geometryMsgsSerializer = new GeometryMsgsSerializer();
         }
 
+        /// <summary>
+        /// Create a PsiGenerator for the IEnumerable and write it to PsiStore
+        /// </summary>
+        /// <typeparam name="T">Type of Message to be written</typeparam>
+        /// <param name="pipeline">Current pipeline</param>
+        /// <param name="topic">Name of the stream</param>
+        /// <param name="messages">Collection of Tuples of dynamic type and time. The true type must be T</param>
+        /// <param name="store">Store to write to</param>
         public static void WriteStronglyTyped<T>(Pipeline pipeline, string topic, IEnumerable<(dynamic, DateTime)> messages, Exporter store)
+        {
+            Console.WriteLine($"Stream: {topic} ({typeof(T)})");
+            Generators.Sequence(pipeline, messages.Select(m => ((T)m.Item1, m.Item2))).Write(topic, store);
+        }
+
+        /// <summary>
+        /// Create a PsiGenerator for the IEnumerable and write it to PsiStore
+        /// </summary>
+        /// <typeparam name="T">Type of Message to be written</typeparam>
+        /// <param name="pipeline">Current pipeline</param>
+        /// <param name="topic">Name of the stream</param>
+        /// <param name="messages">Collection of Tuples with the type and time</param>
+        /// <param name="store">Store to write to</param>
+        public static void WriteStronglyTyped<T>(Pipeline pipeline, string topic, IEnumerable<(T, DateTime)> messages, Exporter store)
         {
             Console.WriteLine($"Stream: {topic} ({typeof(T)})");
             Generators.Sequence(pipeline, messages.Select(m => ((T)m.Item1, m.Item2))).Write(topic, store);

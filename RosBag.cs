@@ -121,8 +121,8 @@ namespace RosBagConverter
             // add each path
             foreach(var path in bagPaths)
             {
-                // open the file stream
-                var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                // open the file stream & enable it to be shared among threads
+                var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 // validate the filestream is a rosbag and we can figure out the version
                 this.validateRosBag(fileStream);
                 // add file stream to the list

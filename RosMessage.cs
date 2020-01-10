@@ -156,7 +156,8 @@ namespace RosBagConverter
                     case "time": return this.ParseArrayField<RosTime>(fieldData.Item2, arrSize, arrayType, offset);
                     case "duration": return this.ParseArrayField<RosDuration>(fieldData.Item2, arrSize, arrayType, offset);
                     default:
-                        throw new NotSupportedException($"Unknown Type {arrayType}");
+                        // this is an array of a constructed type. We return it as a array field of ROSMessages
+                        return this.ParseArrayField<RosMessage>(fieldData.Item2, arrSize, arrayType, offset);
                 }
             }
             else
