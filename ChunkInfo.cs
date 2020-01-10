@@ -29,8 +29,7 @@ namespace RosBagConverter
         public long ChunkPos { get; private set; }
         public RosTime StartTime { get; private set; }
         public RosTime EndTime { get; private set; }
-        public int  Count { get; private set; }
-
+        public int Count { get; private set; }
         public Dictionary<int, int> MessageCount { get; private set; } = new Dictionary<int, int>();
     }
 }
