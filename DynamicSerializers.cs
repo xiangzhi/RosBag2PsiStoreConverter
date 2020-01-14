@@ -10,17 +10,19 @@ namespace RosBagConverter
 {
     public class DynamicSerializers
     {
+        private bool useHeaderTime;
         private StdMsgsSerializers stdMsgsSerializer;
         private SensorMsgsSerializer sensorMsgsSerializer;
         private GeometryMsgsSerializer geometryMsgsSerializer;
         private Dictionary<string, RosMessageDefinition> knowMessageDefinitions;
 
-        public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions)
+        public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions, bool useHeaderTime)
         {
+            this.useHeaderTime = useHeaderTime;
             this.knowMessageDefinitions = knownDefinitions;
             this.stdMsgsSerializer = new StdMsgsSerializers();
-            this.sensorMsgsSerializer = new SensorMsgsSerializer();
-            this.geometryMsgsSerializer = new GeometryMsgsSerializer();
+            this.sensorMsgsSerializer = new SensorMsgsSerializer(useHeaderTime);
+            this.geometryMsgsSerializer = new GeometryMsgsSerializer(useHeaderTime);
         }
 
         /// <summary>

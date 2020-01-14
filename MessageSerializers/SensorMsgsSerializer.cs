@@ -6,11 +6,13 @@ using Microsoft.Psi;
 using Microsoft.Psi.Data;
 using Microsoft.Psi.Imaging;
 
+
 namespace RosBagConverter.MessageSerializers
 {
-    public class SensorMsgsSerializer
+    public class SensorMsgsSerializer : BaseMsgsSerializer
     {
-        public SensorMsgsSerializer()
+        public SensorMsgsSerializer(bool useHeaderTime)
+            : base(useHeaderTime)
         {
             // TODO I wanted everyone to share a serializer but somehow they currently randomly get deconstructed.
         }
@@ -25,7 +27,8 @@ namespace RosBagConverter.MessageSerializers
                         DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.ImageToPsiImage(m), m.Time.ToDateTime())), store);
                         return true;
                     case ("sensor_msgs/CompressedImage"):
-                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.CompressedImageToPsiImage(m), m.Time.ToDateTime())), store);
+                        // get header
+                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.CompressedImageToPsiImage(m), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() : m.Time.ToDateTime())), store);
                         return true;
                     default: return false;
                 }
