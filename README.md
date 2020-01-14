@@ -1,7 +1,8 @@
 ﻿# RosBag to PsiStore Converter
 Licensed under the MIT license.
 
-This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore). Works on both Linux* and Window machines.
+This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore). Works on both Linux (Requires an upcoming fix in Psi) and Window machines.
+
 
 Some properties of the tool:
 * For `Stamped` messages specified in [MessageSerializers](MessageSerializers), use option `h` to use header stamp time instead of message publish time as originating time of message in Psi Stream.
