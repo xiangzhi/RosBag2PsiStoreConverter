@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Psi;
 using Microsoft.Psi.Data;
@@ -23,9 +24,9 @@ namespace RosBagConverter.MessageSerializers
                     case ("sensor_msgs/Image"):
                         DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.ImageToPsiImage(m), m.Time.ToDateTime())), store);
                         return true;
-/*                    case ("sensor_msgs/CompressedImage"):
-                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.RosMessageToPsiImage(m), m.Time.ToDateTime())), store);
-                        return true;*/
+                    case ("sensor_msgs/CompressedImage"):
+                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.CompressedImageToPsiImage(m), m.Time.ToDateTime())), store);
+                        return true;
                     default: return false;
                 }
             }
@@ -64,16 +65,29 @@ namespace RosBagConverter.MessageSerializers
                 throw new NotSupportedException($"Image Encoding Type {encoding} is not supported");
             }
 
-/*                        var image = Image.Create(width, height, format);
-                        image.CopyFrom(message.GetRawField("data").Skip(4).ToArray());
-                        return image;*/
-
-            using (var sharedImage = ImagePool.GetOrCreate(width, height, PixelFormat.BGRA_32bpp))
+            using (var sharedImage = ImagePool.GetOrCreate(width, height, format))
             {
                 // skip the first 4 bytes because in ROS Message its a varied length array where the first 4 bytes tell us the length.
                 sharedImage.Resource.CopyFrom(message.GetRawField("data").Skip(4).ToArray());
                 return sharedImage.AddRef();
                 // return sharedImage;
+            }
+        }
+
+        private dynamic CompressedImageToPsiImage(RosMessage message)
+        {
+            // get format
+            var format = (string)message.GetField("format");
+
+            var imageMemoryStream = new MemoryStream(message.GetRawField("data").Skip(4).ToArray());
+            using (var image = System.Drawing.Image.FromStream(imageMemoryStream))
+            {
+                var bitmap = new System.Drawing.Bitmap(image);
+                using (var sharedImage = ImagePool.GetOrCreate(image.Width, image.Height, PixelFormat.BGR_24bpp))
+                {
+                    sharedImage.Resource.CopyFrom(bitmap);
+                    return sharedImage.AddRef();
+                }
             }
         }
     }

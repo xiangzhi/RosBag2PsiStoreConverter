@@ -6,7 +6,6 @@ using MathNet.Spatial.Euclidean;
 using Microsoft.Psi;
 using Microsoft.Psi.Data;
 using Microsoft.Psi.Imaging;
-using Microsoft.Ros;
 
 namespace RosBagConverter.MessageSerializers
 {
