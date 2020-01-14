@@ -165,6 +165,8 @@ namespace RosBagConverter
                 case "uint64":
                 case "float64":
                 case "header":
+                case "Header":
+                case "std_msgs/Header":
                 case "string":
                     return true;
             }
@@ -289,6 +291,8 @@ namespace RosBagConverter
                     return 8;
                 case "string":
                 case "header":
+                case "Header":
+                case "std_msgs/Header":
                     return -1;
                 default:
                     // Check if this is a nested message type

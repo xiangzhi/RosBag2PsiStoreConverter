@@ -6,17 +6,15 @@ using MathNet.Spatial.Euclidean;
 using Microsoft.Psi;
 using Microsoft.Psi.Data;
 using Microsoft.Psi.Imaging;
-using Microsoft.Ros;
 
 namespace RosBagConverter.MessageSerializers
 {
-    public class GeometryMsgsSerializer
+    public class GeometryMsgsSerializer : BaseMsgsSerializer
     {
-        private bool useHeaderTime; // Whether to use the header time (if available) or message publish time
 
         public GeometryMsgsSerializer(bool useHeaderTime = false)
+            : base(useHeaderTime)
         {
-            this.useHeaderTime = useHeaderTime;
         }
 
         private CoordinateSystem ConvertQuaternionToMatrix(Quaternion q, Point3D point)
@@ -62,9 +60,8 @@ namespace RosBagConverter.MessageSerializers
                     case ("geometry_msgs/PointStamped"):
                         DynamicSerializers.WriteStronglyTyped<Point3D>(pipeline, streamName, messages.Select(m =>
                         {
-                            var header = m.GetField("header");
                             var pointObject = m.GetField("point");
-                            return (new Point3D(pointObject.GetField("x"), pointObject.GetField("y"), pointObject.GetField("z")), ((RosTime)header.GetField("stamp")).ToDateTime());
+                            return (new Point3D(pointObject.GetField("x"), pointObject.GetField("y"), pointObject.GetField("z")), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() : m.Time.ToDateTime());
                         }), store);
                         return true;
                     case ("geometry_msgs/Pose"):
@@ -79,28 +76,21 @@ namespace RosBagConverter.MessageSerializers
                             return (this.ConvertQuaternionToMatrix(quaternion, point), m.Time.ToDateTime());
                         }), store);
                         return true;
+
                     case ("geometry_msgs/PoseStamped"):
                         DynamicSerializers.WriteStronglyTyped<CoordinateSystem>(pipeline, streamName, messages.Select(m =>
                         {
-                            var header = m.GetField("header");
                             var p = m.GetField("Pose");
                             // get the orientation & Position
                             var ori = p.GetField("orientation");
                             var quaternion = new Quaternion(ori.GetField("w"), ori.GetField("x"), ori.GetField("y"), ori.GetField("z"));
                             var pos = p.GetField("position");
                             var point = new Point3D(pos.GetField("x"), pos.GetField("y"), pos.GetField("z"));
-                            if (this.useHeaderTime)
-                            {
-                                return (this.ConvertQuaternionToMatrix(quaternion, point), ((RosTime)header.GetField("stamp")).ToDateTime());
-                            }
-                            else
-                            {
-                                //TODO Also write the existing header to the store
-                                return (this.ConvertQuaternionToMatrix(quaternion, point), m.Time.ToDateTime());
-                            }
-                            
+                            // TODO publish the header seperately
+                            return (this.ConvertQuaternionToMatrix(quaternion, point), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() : m.Time.ToDateTime());
                         }), store);
                         return true;
+
                     case ("geometry_msgs/Transform"):
                         DynamicSerializers.WriteStronglyTyped<CoordinateSystem>(pipeline, streamName, messages.Select(m =>
                         {
@@ -113,6 +103,7 @@ namespace RosBagConverter.MessageSerializers
                             return (this.ConvertQuaternionToMatrix(quaternion, point), m.Time.ToDateTime());
                         }), store);
                         return true;
+
                     case ("geometry_msgs/Vector3"):
                         DynamicSerializers.WriteStronglyTyped<Vector3D>(pipeline, streamName, messages.Select(m =>
                         {

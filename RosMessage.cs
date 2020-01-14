@@ -71,6 +71,7 @@ namespace RosBagConverter
                 case "duration":
                     return new Tuple<uint, dynamic>(8, RosDuration.FromRosBytes(rawData, offset));
                 case "header":
+                case "Header":
                     var header = RosHeader.FromRosBytes(rawData, offset);
                     return new Tuple<uint, dynamic>(header.HeaderByteSize, header);
             }

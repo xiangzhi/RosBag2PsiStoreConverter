@@ -5,11 +5,10 @@ using Microsoft.Psi.Data;
 
 namespace RosBagConverter.MessageSerializers
 {
-    public class StdMsgsSerializers
+    public class StdMsgsSerializers : BaseMsgsSerializer
     {
         public StdMsgsSerializers()
         {
-            // TODO I wanted everyone to share a serializer but somehow they currently randomly get deconstructed.
         }
 
         public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)

@@ -4,9 +4,9 @@ Licensed under the MIT license.
 This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore). Works on both Linux* and Window machines.
 
 Some properties of the tool:
-* [Coming] If the message has a header in the root level, the message's originating time is set to the header time & not the message publish time.
+* For `Stamped` messages specified in [MessageSerializers](MessageSerializers), use option `h` to use header stamp time instead of message publish time as originating time of message in Psi Stream.
 * Does not rely on any external Ros message definitions, the tool figures out the fields from the message definitions in the RosBag.
-* Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image) *Currently only some std_msgs implemented* 
+* Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image)
 * For standard messsages not implemented or custom ros messages, the tool deconstruct them into their [ros message built-in types](http://wiki.ros.org/msg)
 
 ## Installation
@@ -60,13 +60,19 @@ Name                                              Type                          
 `RosBagConverter.exe convert`
 Converts the rosbag to a PsiStore. You can specified which topic to be converted
 ```
-  -f, --file      Required. Either directory holding bag files, list of bag files or a single bag files
+  -f, --file      Required. Path to first Rosbag
 
   -o, --output    Required. Path to where to store PsiStore
 
   -n, --name      Required. Name of the PsiStore
 
+  -h              Use header time
+
   -t, --topics    List of topics to be converted to PsiStore
+
+  --help          Display this help screen.
+
+  --version       Display version information.
 ```
 Example:
 ```
@@ -80,6 +86,9 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
+* 1/13/2020
+	* Added serialization of sensor_msgs/CompressedImage to uncompressed Psi Images
+	* Added ability to specify whether to use header time for selected stamped messages using `-h` command
 * 1/9/2020
 	* Added a bunch of geometry_msgs definition.
 	* fixed the problem of chain lookup of fields in serialization.

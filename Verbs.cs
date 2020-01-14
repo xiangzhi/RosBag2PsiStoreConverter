@@ -28,6 +28,9 @@ namespace RosBagConverter
             [Option('n', "name", Required = true, HelpText = "Name of the PsiStore")]
             public string Name { get; set; }
 
+            [Option('h', HelpText = "Use header time")]
+            public bool useHeaderTime { get; set; }
+
             [Option('t', "topics", HelpText = "List of topics to be converted to PsiStore")]
             public IEnumerable<string> Topics { get; set; }
         }
