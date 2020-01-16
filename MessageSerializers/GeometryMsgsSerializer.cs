@@ -13,7 +13,7 @@ namespace RosBagConverter.MessageSerializers
     {
 
         public GeometryMsgsSerializer(bool useHeaderTime = false)
-            : base(useHeaderTime)
+            : base("geometry_msgs", useHeaderTime)
         {
         }
 
@@ -39,7 +39,7 @@ namespace RosBagConverter.MessageSerializers
             return new CoordinateSystem(mat);
         }
 
-        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
+        public override bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
         {
             try
             {

@@ -11,18 +11,18 @@ namespace RosBagConverter
     public class DynamicSerializers
     {
         private bool useHeaderTime;
-        private StdMsgsSerializers stdMsgsSerializer;
-        private SensorMsgsSerializer sensorMsgsSerializer;
-        private GeometryMsgsSerializer geometryMsgsSerializer;
+        private List<BaseMsgsSerializer> customSerializerList = new List<BaseMsgsSerializer>();
         private Dictionary<string, RosMessageDefinition> knowMessageDefinitions;
 
         public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions, bool useHeaderTime)
         {
             this.useHeaderTime = useHeaderTime;
             this.knowMessageDefinitions = knownDefinitions;
-            this.stdMsgsSerializer = new StdMsgsSerializers();
-            this.sensorMsgsSerializer = new SensorMsgsSerializer(useHeaderTime);
-            this.geometryMsgsSerializer = new GeometryMsgsSerializer(useHeaderTime);
+
+            // Add standard custom serializers
+            this.AddCustomSerializer(new StdMsgsSerializers());
+            this.AddCustomSerializer(new SensorMsgsSerializer(useHeaderTime));
+            this.AddCustomSerializer(new GeometryMsgsSerializer(useHeaderTime));
         }
 
         /// <summary>
@@ -123,6 +123,12 @@ namespace RosBagConverter
             }
         }
 
+
+        public void AddCustomSerializer(BaseMsgsSerializer serializer)
+        {
+            this.customSerializerList.Add(serializer);
+        }
+
         /// <summary>
         /// Serialize the ROS Message by converting to \psi streams and writing into PsiStore.
         /// If they are common types, they are converted into formats that are more suitable for Psi.
@@ -132,25 +138,15 @@ namespace RosBagConverter
             // If it's a known type, we serialize according to a pre-defined schema
 
             // Loop through a list of known message type
-            if (messageType.StartsWith("std_msgs"))
+            foreach(var serializer in this.customSerializerList)
             {
-                if (this.stdMsgsSerializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
+                // Check if they start with the currect prefix
+                if (messageType.StartsWith(serializer.Prefix))
                 {
-                    return;
-                }
-            }
-            else if (messageType.StartsWith("sensor_msgs"))
-            {
-                if (this.sensorMsgsSerializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
-                {
-                    return;
-                }
-            }
-            else if (messageType.StartsWith("geometry_msgs"))
-            {
-                if (this.geometryMsgsSerializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
-                {
-                    return;
+                    if (serializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
+                    {
+                        return;
+                    }
                 }
             }
 

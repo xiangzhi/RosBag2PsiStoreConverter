@@ -8,10 +8,11 @@ namespace RosBagConverter.MessageSerializers
     public class StdMsgsSerializers : BaseMsgsSerializer
     {
         public StdMsgsSerializers()
+            : base("std_msgs")
         {
         }
 
-        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
+        public override bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
         {
             switch (messageType)
             {

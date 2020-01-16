@@ -12,12 +12,12 @@ namespace RosBagConverter.MessageSerializers
     public class SensorMsgsSerializer : BaseMsgsSerializer
     {
         public SensorMsgsSerializer(bool useHeaderTime)
-            : base(useHeaderTime)
+            : base("sensor_msgs", useHeaderTime)
         {
             // TODO I wanted everyone to share a serializer but somehow they currently randomly get deconstructed.
         }
 
-        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
+        public override bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
         {
             try
             {
