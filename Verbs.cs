@@ -31,6 +31,9 @@ namespace RosBagConverter
             [Option('h', HelpText = "Use header time")]
             public bool useHeaderTime { get; set; }
 
+            [Option('r', "restamp", HelpText = "Re-stamp Starting Time to be relative to the beginning of this application")]
+            public bool RestampTime { get; set; }
+
             [Option('t', "topics", HelpText = "List of topics to be converted to PsiStore")]
             public IEnumerable<string> Topics { get; set; }
         }

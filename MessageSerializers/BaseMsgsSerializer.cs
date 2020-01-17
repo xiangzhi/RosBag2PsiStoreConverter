@@ -12,10 +12,11 @@ namespace RosBagConverter.MessageSerializers
     public abstract class BaseMsgsSerializer
     {
         protected bool useHeaderTime; // Whether to use the header time (if available) or message publish time
-        public BaseMsgsSerializer(string prefix, bool useHeaderTime = false)
+        public BaseMsgsSerializer(string prefix, bool useHeaderTime = false, TimeSpan? offset = null)
         {
             this.useHeaderTime = useHeaderTime;
             this.Prefix = prefix;
+            this.Offset = offset ?? TimeSpan.Zero;
         }
 
         /// <summary>
@@ -30,6 +31,8 @@ namespace RosBagConverter.MessageSerializers
         public abstract bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType);
 
         public string Prefix { get; private set; }
+
+        public TimeSpan Offset { get; private set; }
 
     }
 }

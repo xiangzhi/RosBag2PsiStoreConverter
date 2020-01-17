@@ -13,16 +13,18 @@ namespace RosBagConverter
         private bool useHeaderTime;
         private List<BaseMsgsSerializer> customSerializerList = new List<BaseMsgsSerializer>();
         private Dictionary<string, RosMessageDefinition> knowMessageDefinitions;
+        private TimeSpan offset;
 
-        public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions, bool useHeaderTime)
+        public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions, bool useHeaderTime, TimeSpan? offset = null)
         {
+            this.offset = offset ?? TimeSpan.Zero;
             this.useHeaderTime = useHeaderTime;
             this.knowMessageDefinitions = knownDefinitions;
 
             // Add standard custom serializers
-            this.AddCustomSerializer(new StdMsgsSerializers());
-            this.AddCustomSerializer(new SensorMsgsSerializer(useHeaderTime));
-            this.AddCustomSerializer(new GeometryMsgsSerializer(useHeaderTime));
+            this.AddCustomSerializer(new StdMsgsSerializers(offset: offset));
+            this.AddCustomSerializer(new SensorMsgsSerializer(useHeaderTime, offset: offset));
+            this.AddCustomSerializer(new GeometryMsgsSerializer(useHeaderTime, offset: offset));
         }
 
         /// <summary>
@@ -177,7 +179,6 @@ namespace RosBagConverter
 
         private void serializeBuiltInFields(Pipeline pipeline, Exporter store, string fieldName, string fieldType, string streamName, IEnumerable<RosMessage> messages)
         {
-            BufferWriter dataBuffer = new BufferWriter(128);
 
             switch (fieldType)
             {
@@ -193,13 +194,13 @@ namespace RosBagConverter
                 case ("float64"):
                 case ("string"):
                 case ("bool"):
-                    WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField(fieldName), m.Time.ToDateTime())), store);
+                    WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField(fieldName), m.Time.ToDateTime() + this.offset)), store);
                     return;
                 case ("time"):
-                    WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)((RosTime)m.GetField(fieldName)).ToDateTime(), m.Time.ToDateTime())), store);
+                    WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)((RosTime)m.GetField(fieldName)).ToDateTime(), m.Time.ToDateTime() + this.offset)), store);
                     return;
                 case ("duration"):
-                    WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)((RosDuration)m.GetField(fieldName)).ToTimeSpan(), m.Time.ToDateTime())), store);
+                    WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)((RosDuration)m.GetField(fieldName)).ToTimeSpan(), m.Time.ToDateTime() + this.offset)), store);
                     return;
             }
 
@@ -212,7 +213,7 @@ namespace RosBagConverter
                     case ("uint8"):
                     case ("int32"):
                     case ("float64"):
-                        WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)m.GetField(fieldName), m.Time.ToDateTime())), store);
+                        WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)m.GetField(fieldName), m.Time.ToDateTime() + this.offset)), store);
                         return;
                 }
             }
