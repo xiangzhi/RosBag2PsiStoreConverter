@@ -2,7 +2,7 @@
   "profiles": {
     "RosBagConverter": {
       "commandName": "Project",
-      "commandLineArgs": "convert -f H:\\Data -o C:\\Data\\Stores -n baxter_example -t /kinect2/hd/image_color/compressed -h"
+      "commandLineArgs": "convert -h "
     }
   }
 }

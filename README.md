@@ -6,6 +6,7 @@ This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform
 
 Some properties of the tool:
 * For `Stamped` messages specified in [MessageSerializers](MessageSerializers), use option `h` to use header stamp time instead of message publish time as originating time of message in Psi Stream.
+* If given the option `-r`, the ROSBag's time starts from the beginning of this application.
 * Does not rely on any external Ros message definitions, the tool figures out the fields from the message definitions in the RosBag.
 * Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image)
 * For standard messsages not implemented or custom ros messages, the tool deconstruct them into their [ros message built-in types](http://wiki.ros.org/msg)
@@ -61,19 +62,22 @@ Name                                              Type                          
 `RosBagConverter.exe convert`
 Converts the rosbag to a PsiStore. You can specified which topic to be converted
 ```
-  -f, --file      Required. Path to first Rosbag
+  -f, --file       Required. Path to first Rosbag
 
-  -o, --output    Required. Path to where to store PsiStore
+  -o, --output     Required. Path to where to store PsiStore
 
-  -n, --name      Required. Name of the PsiStore
+  -n, --name       Required. Name of the PsiStore
 
-  -h              Use header time
+  -h               Use header time
 
-  -t, --topics    List of topics to be converted to PsiStore
+  -r, --restamp    Re-stamp Starting Time to be relative to the beginning of this application
 
-  --help          Display this help screen.
+  -t, --topics     List of topics to be converted to PsiStore
 
-  --version       Display version information.
+  --help           Display this help screen.
+
+  --version        Display version information.
+
 ```
 Example:
 ```
@@ -87,6 +91,9 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
+* 1/16/2020
+	* Added interface to add custom serializers.
+	* Added option `-r` to restamp the time.
 * 1/13/2020
 	* Added serialization of sensor_msgs/CompressedImage to uncompressed Psi Images
 	* Added ability to specify whether to use header time for selected stamped messages using `-h` command
@@ -105,8 +112,6 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 	* Allow the reading of multiple ros bag files as long as they are ordered correctly.
 
 ## TODO
-1. Optimize code
-	* Convert the RosBag Module into a ISourceComponent. 
+1. Figure out slowdown and optimize code
 1. Implement more standard message types (Sensor_msgs, Geometry_msgs, etc)
-1. For message with headers, use the header time instead of the message publish time (Could also be an option to be toggled).
 1. Figure out how to handle transformations that exist on the /tf and /tf_static topics. 

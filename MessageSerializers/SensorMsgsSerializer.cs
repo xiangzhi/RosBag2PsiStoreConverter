@@ -11,24 +11,24 @@ namespace RosBagConverter.MessageSerializers
 {
     public class SensorMsgsSerializer : BaseMsgsSerializer
     {
-        public SensorMsgsSerializer(bool useHeaderTime)
-            : base(useHeaderTime)
+        public SensorMsgsSerializer(bool useHeaderTime, TimeSpan? offset = null)
+            : base("sensor_msgs", useHeaderTime, offset:offset)
         {
             // TODO I wanted everyone to share a serializer but somehow they currently randomly get deconstructed.
         }
 
-        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
+        public override bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
         {
             try
             {
                 switch (messageType)
                 {
                     case ("sensor_msgs/Image"):
-                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.ImageToPsiImage(m), m.Time.ToDateTime())), store);
+                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.ImageToPsiImage(m), m.Time.ToDateTime() + this.Offset)), store);
                         return true;
                     case ("sensor_msgs/CompressedImage"):
                         // get header
-                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.CompressedImageToPsiImage(m), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() : m.Time.ToDateTime())), store);
+                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.CompressedImageToPsiImage(m), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() + this.Offset : m.Time.ToDateTime() + this.Offset)), store);
                         return true;
                     default: return false;
                 }

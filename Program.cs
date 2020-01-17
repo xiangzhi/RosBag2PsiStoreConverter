@@ -32,26 +32,36 @@ namespace RosBagConverter
             var bag = new RosBag(opts.Input.ToList());
             var topicList = opts.Topics.Count() > 0 ? opts.Topics : bag.TopicList;
 
+            TimeSpan offset = TimeSpan.Zero;
+            // check if we should should restamp the time as current time.
+            if (opts.RestampTime)
+            {
+                // This is a hack for now, we don't know the actual pipeline startime until it start
+                // This is obviously break if the pipeline starts later etc.
+                // One idea is to pass the bag.StartTime around, but this might be good enough.
+                offset = DateTime.UtcNow - bag.StartTime;
+            }
+            
             // create a psi store
-            using (var pipeline = Pipeline.Create(true))
+            using (var pipeline = Pipeline.Create(true)) //enable diagnostic
             {
                 var store = Store.Create(pipeline, opts.Name, opts.Output);
-                var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions, opts.useHeaderTime);
+
+                // We cannot write the diagnostics information because PsiStudio cannot
+                // handle weirdly out of wack times.
+                store.Write(pipeline.Diagnostics, "ReaderDiagnostics");
+
+                var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions, opts.useHeaderTime, offset);
                 foreach (var topic in topicList)
                 {
                     var messageDef = bag.GetMessageDefinition(topic);
                     var messages = bag.ReadTopic(topic);
                     dynamicSerializer.SerializeMessages(pipeline, store, topic, messageDef.Type, messages);
                 }
-
-                // We cannot write the diagnostics information because PsiStudio cannot
-                // handle weirdly out of wack times.
-                // store.Write(pipeline.Diagnostics, "ReaderDiagnostics");
-
                 pipeline.Run();
             }
             watch.Stop();
-            Console.WriteLine($"Total elapsed time:{watch.ElapsedMilliseconds}");
+            Console.WriteLine($"Total elapsed time:{watch.ElapsedMilliseconds/1000} secs");
 
             return 1;
         }

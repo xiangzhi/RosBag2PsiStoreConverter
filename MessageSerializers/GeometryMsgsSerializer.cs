@@ -12,8 +12,8 @@ namespace RosBagConverter.MessageSerializers
     public class GeometryMsgsSerializer : BaseMsgsSerializer
     {
 
-        public GeometryMsgsSerializer(bool useHeaderTime = false)
-            : base(useHeaderTime)
+        public GeometryMsgsSerializer(bool useHeaderTime = false, TimeSpan? offset = null)
+            : base("geometry_msgs", useHeaderTime, offset: offset)
         {
         }
 
@@ -39,7 +39,7 @@ namespace RosBagConverter.MessageSerializers
             return new CoordinateSystem(mat);
         }
 
-        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
+        public override bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
         {
             try
             {
@@ -48,20 +48,20 @@ namespace RosBagConverter.MessageSerializers
                     case ("geometry_msgs/Quaternion"):
                         DynamicSerializers.WriteStronglyTyped<Quaternion>(pipeline, streamName, messages.Select(m =>
                         {
-                            return (new Quaternion(m.GetField("w"), m.GetField("x"), m.GetField("y"), m.GetField("z")), m.Time.ToDateTime());
+                            return (new Quaternion(m.GetField("w"), m.GetField("x"), m.GetField("y"), m.GetField("z")), m.Time.ToDateTime() + this.Offset);
                         }), store);
                         return true;
                     case ("geometry_msgs/Point"):
                         DynamicSerializers.WriteStronglyTyped<Point3D>(pipeline, streamName, messages.Select(m =>
                         {
-                            return (new Point3D(m.GetField("x"), m.GetField("y"), m.GetField("z")), m.Time.ToDateTime());
+                            return (new Point3D(m.GetField("x"), m.GetField("y"), m.GetField("z")), m.Time.ToDateTime() + this.Offset);
                         }), store);
                         return true;
                     case ("geometry_msgs/PointStamped"):
                         DynamicSerializers.WriteStronglyTyped<Point3D>(pipeline, streamName, messages.Select(m =>
                         {
                             var pointObject = m.GetField("point");
-                            return (new Point3D(pointObject.GetField("x"), pointObject.GetField("y"), pointObject.GetField("z")), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() : m.Time.ToDateTime());
+                            return (new Point3D(pointObject.GetField("x"), pointObject.GetField("y"), pointObject.GetField("z")), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() + this.Offset : m.Time.ToDateTime() + this.Offset);
                         }), store);
                         return true;
                     case ("geometry_msgs/Pose"):
@@ -73,7 +73,7 @@ namespace RosBagConverter.MessageSerializers
                             var pos = m.GetField("position");
                             var point = new Point3D(pos.GetField("x"), pos.GetField("y"), pos.GetField("z"));
 
-                            return (this.ConvertQuaternionToMatrix(quaternion, point), m.Time.ToDateTime());
+                            return (this.ConvertQuaternionToMatrix(quaternion, point), m.Time.ToDateTime() + this.Offset);
                         }), store);
                         return true;
 
@@ -87,7 +87,7 @@ namespace RosBagConverter.MessageSerializers
                             var pos = p.GetField("position");
                             var point = new Point3D(pos.GetField("x"), pos.GetField("y"), pos.GetField("z"));
                             // TODO publish the header seperately
-                            return (this.ConvertQuaternionToMatrix(quaternion, point), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() : m.Time.ToDateTime());
+                            return (this.ConvertQuaternionToMatrix(quaternion, point), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() + this.Offset : m.Time.ToDateTime() + this.Offset);
                         }), store);
                         return true;
 
@@ -100,14 +100,14 @@ namespace RosBagConverter.MessageSerializers
                             var pos = m.GetField("translation");
                             var point = new Point3D(pos.GetField("x"), pos.GetField("y"), pos.GetField("z"));
 
-                            return (this.ConvertQuaternionToMatrix(quaternion, point), m.Time.ToDateTime());
+                            return (this.ConvertQuaternionToMatrix(quaternion, point), m.Time.ToDateTime() + this.Offset);
                         }), store);
                         return true;
 
                     case ("geometry_msgs/Vector3"):
                         DynamicSerializers.WriteStronglyTyped<Vector3D>(pipeline, streamName, messages.Select(m =>
                         {
-                            return (new Vector3D(m.GetField("x"), m.GetField("y"), m.GetField("z")), m.Time.ToDateTime());
+                            return (new Vector3D(m.GetField("x"), m.GetField("y"), m.GetField("z")), m.Time.ToDateTime() + this.Offset);
                         }), store);
                         return true;
                     default: return false;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Psi;
 using Microsoft.Psi.Data;
@@ -7,11 +8,12 @@ namespace RosBagConverter.MessageSerializers
 {
     public class StdMsgsSerializers : BaseMsgsSerializer
     {
-        public StdMsgsSerializers()
+        public StdMsgsSerializers(TimeSpan? offset = null)
+            : base("std_msgs", offset:offset)
         {
         }
 
-        public bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
+        public override bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType)
         {
             switch (messageType)
             {
@@ -27,14 +29,14 @@ namespace RosBagConverter.MessageSerializers
                 case "std_msgs/Float64":
                 case "std_msgs/String":
                 case "std_msgs/Bool":
-                    DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField("data"), m.Time.ToDateTime())), store);
+                    DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField("data"), m.Time.ToDateTime() + this.Offset)), store);
                     return true;
                 case "std_msgs/Header":
                     // For header, return time for now
                     DynamicSerializers.WriteDynamic(pipeline, streamName, messages.Select(m => 
                     {
                         var headerTime = m.GetField("stamp") as RosTime;
-                        return ((dynamic) headerTime.ToDateTime(), m.Time.ToDateTime());
+                        return ((dynamic) headerTime.ToDateTime(), m.Time.ToDateTime() + this.Offset);
                     }), store);
                     return true;
                 default: return false;
