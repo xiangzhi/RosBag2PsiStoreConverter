@@ -33,9 +33,14 @@ namespace RosBagConverter
             var topicList = opts.Topics.Count() > 0 ? opts.Topics : bag.TopicList;
 
             // create a psi store
-            using (var pipeline = Pipeline.Create(true))
+            using (var pipeline = Pipeline.Create(true)) //enable diagnostic
             {
                 var store = Store.Create(pipeline, opts.Name, opts.Output);
+
+                // We cannot write the diagnostics information because PsiStudio cannot
+                // handle weirdly out of wack times.
+                store.Write(pipeline.Diagnostics, "ReaderDiagnostics");
+
                 var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions, opts.useHeaderTime);
                 foreach (var topic in topicList)
                 {
@@ -43,15 +48,10 @@ namespace RosBagConverter
                     var messages = bag.ReadTopic(topic);
                     dynamicSerializer.SerializeMessages(pipeline, store, topic, messageDef.Type, messages);
                 }
-
-                // We cannot write the diagnostics information because PsiStudio cannot
-                // handle weirdly out of wack times.
-                // store.Write(pipeline.Diagnostics, "ReaderDiagnostics");
-
                 pipeline.Run();
             }
             watch.Stop();
-            Console.WriteLine($"Total elapsed time:{watch.ElapsedMilliseconds}");
+            Console.WriteLine($"Total elapsed time:{watch.ElapsedMilliseconds/1000} secs");
 
             return 1;
         }

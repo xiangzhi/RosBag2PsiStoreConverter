@@ -145,7 +145,7 @@ namespace RosBagConverter
                     case "string": return this.ParseArrayField<string>(fieldData.Item2, arrSize, arrayType, offset);
                     case "bool": return this.ParseArrayField<bool>(fieldData.Item2, arrSize, arrayType, offset);
                     case "int8": return this.ParseArrayField<sbyte>(fieldData.Item2, arrSize, arrayType, offset);
-                    case "uint8": return this.ParseArrayField<byte>(fieldData.Item2, arrSize, arrayType, offset);
+                    case "uint8": return fieldData.Item2;
                     case "int16": return this.ParseArrayField<short>(fieldData.Item2, arrSize, arrayType, offset);
                     case "uint16": return this.ParseArrayField<ushort>(fieldData.Item2, arrSize, arrayType, offset);
                     case "int32": return this.ParseArrayField<int>(fieldData.Item2, arrSize, arrayType, offset);
