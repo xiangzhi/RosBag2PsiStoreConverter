@@ -92,7 +92,8 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 
 ## ChangeLog:
 * 1/16/2020
-	* Added interface to add custom serializers.
+	* Added interface to add custom serializers.-
+
 	* Added option `-r` to restamp the time.
 * 1/13/2020
 	* Added serialization of sensor_msgs/CompressedImage to uncompressed Psi Images

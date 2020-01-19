@@ -49,7 +49,7 @@ namespace RosBagConverter
 
                 // We cannot write the diagnostics information because PsiStudio cannot
                 // handle weirdly out of wack times.
-                store.Write(pipeline.Diagnostics, "ReaderDiagnostics");
+                // store.Write(pipeline.Diagnostics, "ReaderDiagnostics");
 
                 var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions, opts.useHeaderTime, offset);
                 foreach (var topic in topicList)
