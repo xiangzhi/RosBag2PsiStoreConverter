@@ -177,11 +177,6 @@ namespace RosBagConverter
                     nextRecordOffset = dataOffset + dataLen;
                 }
             }
-
-            // Pre-calculate offsets
-            foreach(var msgDef in this.KnownRosMessageDefinitions){
-                msgDef.Value.PreCalculateOffsets();
-            }
         }
 
 

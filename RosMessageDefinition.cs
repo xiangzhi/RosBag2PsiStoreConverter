@@ -121,26 +121,6 @@ namespace RosBagConverter
         }
         public string Type { get; private set; }
 
-        public int GetOffset(byte[] rawData, string indexString)
-        {
-            int offset = 0;
-            
-            // Loop through each of the properties and calculate its size
-            foreach(var field in this.Properties)
-            {
-                if (field.Item2 == indexString)
-                {
-                    return offset;
-                }
-                else
-                {
-                    var fieldSize = this.GetSizeOfProperty(rawData, field.Item1, offset);
-                    offset += fieldSize;
-                }
-            }
-            return -1; // Cannot find field in the Properties.
-        }
-
         public static bool IsBuiltInType(string fieldType)
         {
             if (fieldType.Contains('['))
@@ -172,222 +152,147 @@ namespace RosBagConverter
             }
             return false;
         }
-
-        private int GetSize(byte[] rawData, int offset)
+  
+        /// <summary>
+        /// Parse the build in type and return the length of object in the bytes and record
+        /// </summary>
+        /// <param name="rawData"></param>
+        /// <param name="type"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        private Tuple<int, dynamic> ParseBuildInTypes(byte[] rawData, string type, int offset = 0)
         {
-            int total_size = 0;
-
-            // We go through each field and get the size of the properties.
-            foreach (var field in this.Properties)
+            switch (type)
             {
-                var fieldSize = this.GetSizeOfProperty(rawData, field.Item1, offset);
-                offset += fieldSize;
-                total_size += fieldSize;
-            }
-            return total_size;
-        }
-
-
-        private int GetSizeOfProperty(byte[] rawData, string fieldType, int offset)
-        {
-            switch (fieldType)
-            {
-                case "bool":
-                case "int8":
-                case "uint8":
-                case "char":
-                case "byte":
-                    return 1;
-                case "int16":
-                case "uint16":
-                    return 2;
-                case "int32":
-                case "uint32":
-                case "float32":
-                    return 4;
-                case "time":
-                case "duration":
-                case "int64":
-                case "uint64":
-                case "float64":
-                    return 8;
-                case "header":
-                case "std_msgs/Header":
-                case "Header":
-                    offset += 4; // Sequence ID
-                    offset += 8; // time
-                                 // figure out the size of the string
-                    var frameStrLength = BitConverter.ToInt32(rawData, offset);
-                    return 4 + 8 + frameStrLength + 4;
                 case "string":
-                    var strLength = BitConverter.ToInt32(rawData, offset);
-                    return 4 + strLength;
-                default:
-
-                    // Check if the type is an array
-                    if (fieldType.Contains("["))
-                    {
-                        int total_size = 0;
-                        var arrayType = fieldType.Substring(0, fieldType.IndexOf('['));
-                        var arrSize = 0;
-                        if (fieldType.EndsWith("[]"))
-                        {
-                            // this is variable length array
-                            arrSize = BitConverter.ToInt32(rawData, offset);
-                            total_size += 4;
-                        }
-                        else if (fieldType.EndsWith("]"))
-                        {
-                            // this is a fixed length array
-                            arrSize = Int32.Parse(fieldType.Substring(fieldType.IndexOf('[') + 1, fieldType.IndexOf(']') - fieldType.IndexOf('[') - 1));
-                        }
-
-                        for (var i = 0; i < arrSize; i++)
-                        {
-                            total_size += this.GetSizeOfProperty(rawData, arrayType, offset + total_size);
-                        }
-                        return total_size;
-                    }
-                    else
-                    {
-                        // Check if its a known types that were encoded at the beginning of the RosBag
-                        if (this.KnownDefinitions.ContainsKey(fieldType))
-                        {
-                            return this.KnownDefinitions[fieldType].GetSize(rawData, offset);
-                        }
-                        // TODO: Check why this line exist here
-                        foreach (var key in this.KnownDefinitions.Keys)
-                        {
-                            if (key.EndsWith(fieldType)){
-                                return this.KnownDefinitions[key].GetSize(rawData, offset);
-                            }
-                        }
-                        throw new NotImplementedException($"Unknown Type:{fieldType}");
-                    }
-            }
-        }
-
-        private int GetSizeOfNonArrayField(string singleFieldType){
-            switch (singleFieldType)
-            {
+                    var len = (int)BitConverter.ToInt32(rawData, offset);
+                    return new Tuple<int, dynamic>(len+4, Encoding.UTF8.GetString(rawData, offset + 4, rawData.Length - offset -4));
                 case "bool":
+                    return new Tuple<int, dynamic>(1, BitConverter.ToBoolean(rawData, offset));
                 case "int8":
+                    return new Tuple<int, dynamic>(1, rawData[offset]);
                 case "uint8":
-                case "char":
-                case "byte":
-                    return 1;
+                    return new Tuple<int, dynamic>(1, rawData[offset]);
                 case "int16":
+                    return new Tuple<int, dynamic>(2, BitConverter.ToInt16(rawData, offset));
                 case "uint16":
-                    return 2;
+                    return new Tuple<int, dynamic>(2, BitConverter.ToUInt16(rawData, offset));
                 case "int32":
+                    return new Tuple<int, dynamic>(4, BitConverter.ToInt32(rawData, offset));
                 case "uint32":
-                case "float32":
-                    return 4;
-                case "time":
-                case "duration":
+                    return new Tuple<int, dynamic>(4, BitConverter.ToUInt32(rawData, offset));
                 case "int64":
+                    return new Tuple<int, dynamic>(8, BitConverter.ToInt64(rawData, offset));
                 case "uint64":
+                    return new Tuple<int, dynamic>(8, BitConverter.ToUInt64(rawData, offset));
+                case "float32":
+                    return new Tuple<int, dynamic>(4, BitConverter.ToSingle(rawData, offset));
                 case "float64":
-                    return 8;
-                case "string":
+                    return new Tuple<int, dynamic>(8, BitConverter.ToDouble(rawData, offset));
+                case "time":
+                    return new Tuple<int, dynamic>(8, RosTime.FromRosBytes(rawData, offset));
+                case "duration":
+                    return new Tuple<int, dynamic>(8, RosDuration.FromRosBytes(rawData, offset));
                 case "header":
                 case "Header":
-                case "std_msgs/Header":
-                    return -1;
-                default:
-                    // Check if this is a nested message type
-                    if(this.KnownDefinitions.ContainsKey(singleFieldType)){
-                        // If we haven't count it yet, count it
-                        if (!this.KnownDefinitions[singleFieldType].PreCalculatedFieldSize){
-                            this.KnownDefinitions[singleFieldType].PreCalculateOffsets();
-                        }
-                        // check if it has a fixed size
-                        if (this.KnownDefinitions[singleFieldType].HasStaticSize){
-                            return this.KnownDefinitions[singleFieldType].MessageSize;
-                        }
-                    }
-                    return -1;
+                    var header = RosHeader.FromRosBytes(rawData, offset);
+                    return new Tuple<int, dynamic>((int)header.HeaderByteSize, header);
+            }
+            return null;
+        }
+
+        private (int, dynamic) ParseSingleFieldType(byte[] rawData, string type, int offset = 0)
+        {
+            if (RosMessageDefinition.IsBuiltInType(type)){
+                var result = this.ParseBuildInTypes(rawData, type, offset);
+                return (result.Item1, result.Item2);
+            }
+            else
+            {
+                // If not built in type
+                // get the message definition of the type
+                var msgDef = this.KnownDefinitions[type];
+                var subMessageResult = msgDef.ParseMessage(rawData, offset);
+                return subMessageResult;
             }
         }
 
-        
-        // Whether this ROS Message has a static field size or not
-        public bool HasStaticSize { get; private set; } = false;
-        public bool PreCalculatedFieldSize { get; private set; } = false;
-        public int MessageSize { get; private set; } = -1;
-        public Dictionary<string, int> PropertyOffsets {get; private set;} = new Dictionary<string, int>();
 
-        public bool PreCalculateOffsets(){
-
-            // check if we already pre-calculated this field.
-            if (this.PreCalculatedFieldSize){
-                return this.HasStaticSize;
+        private (int, dynamic) ParseArrayField<T>(byte[] data, int arrSize, string type, int offset)
+        {
+            var size = 0;
+            var arr = new T[arrSize];
+            for (var i = 0; i < arrSize; i++)
+            {
+                var parseResult = this.ParseSingleFieldType(data, type, offset: offset);
+                offset += (int)parseResult.Item1;
+                size += (int)parseResult.Item1;
+                arr[i] = parseResult.Item2;
             }
+            return (size, (dynamic) arr);
+        }
 
-            // mark that we have start precalculating the message size.
-            this.PreCalculatedFieldSize = true;   
+        private (int, dynamic) PraseArrayFieldType(byte[] rawData, string arrayType, int arrSize, int offset)
+        {
+            // now parse the array
+            switch (arrayType)
+            {
+                case "string": return this.ParseArrayField<string>(rawData, arrSize, arrayType, offset);
+                case "bool": return this.ParseArrayField<bool>(rawData, arrSize, arrayType, offset);
+                case "int8": return this.ParseArrayField<sbyte>(rawData, arrSize, arrayType, offset);
+                case "uint8": return (arrSize, (dynamic) rawData);
+                case "int16": return this.ParseArrayField<short>(rawData, arrSize, arrayType, offset);
+                case "uint16": return this.ParseArrayField<ushort>(rawData, arrSize, arrayType, offset);
+                case "int32": return this.ParseArrayField<int>(rawData, arrSize, arrayType, offset);
+                case "uint32": return this.ParseArrayField<uint>(rawData, arrSize, arrayType, offset);
+                case "int64": return this.ParseArrayField<long>(rawData, arrSize, arrayType, offset);
+                case "uint64": return this.ParseArrayField<ulong>(rawData, arrSize, arrayType, offset);
+                case "float32": return this.ParseArrayField<float>(rawData, arrSize, arrayType, offset);
+                case "float64": return this.ParseArrayField<double>(rawData, arrSize, arrayType, offset);
+                case "time": return this.ParseArrayField<RosTime>(rawData, arrSize, arrayType, offset);
+                case "duration": return this.ParseArrayField<RosDuration>(rawData, arrSize, arrayType, offset);
+                default:
+                    // this is an array of a constructed type. We return it as a array field of ROSMessages
+                    return this.ParseArrayField<Dictionary<string, dynamic>>(rawData, arrSize, arrayType, offset);
+            }
+        }
 
-            int offset = 0;
-            foreach(var properties in this.Properties){
-                // Add the current property to the list
-                PropertyOffsets.Add(properties.Item2, offset);
-
-                // Now we calculate the offsets
-                // First check if its an array
-                if(properties.Item1.Contains("[")){
-                    // check if its a varied array or fixed size one
-                    if (properties.Item1.Contains("[]")){
-                        // The size could only be determined at runtime.
-                        this.HasStaticSize = false;
-                        return false;
+        public (int, Dictionary<string, dynamic>) ParseMessage(byte[] data, int offset = 0){
+            
+            var originalOffset = offset;
+            var fieldDict = new Dictionary<string, dynamic>();
+            // go through each property
+            foreach(var property in this.Properties){
+                // First check if its an array type
+                if(property.Item1.Contains('[')){
+                    // get type
+                    var arrType = property.Item1.Substring(0, property.Item1.IndexOf('['));
+                    var arrSize = 0;
+                    if (property.Item1.EndsWith("[]"))
+                    {
+                        // this is variable length array
+                        arrSize = BitConverter.ToInt32(data, offset);
+                        offset += 4;
                     }
-                    else{
-                        // get the length of array
-                        var arrSize = Int32.Parse(properties.Item1.Substring(properties.Item1.IndexOf('[') + 1, properties.Item1.IndexOf(']') - properties.Item1.IndexOf('[') - 1));
-                        var singleFieldType = properties.Item1.Substring(0, properties.Item1.IndexOf('['));
-
-                        int fieldSize = this.GetSizeOfNonArrayField(singleFieldType);
-                        if(fieldSize == -1){
-                            // The size could only be determined at runtime.
-                            this.HasStaticSize = false;
-                            return false;
-                        }
-                        offset += (fieldSize * arrSize);
+                    else if (property.Item1.EndsWith("]"))
+                    {
+                        // this is a fixed length array
+                        arrSize = Int32.Parse(property.Item1.Substring(property.Item1.IndexOf('[') + 1, property.Item1.IndexOf(']') - property.Item1.IndexOf('[') - 1));
                     }
+                    // now parse the array
+                    var parseResult = this.PraseArrayFieldType(data, arrType, arrSize, offset);
+                    offset += parseResult.Item1;
+                    fieldDict[property.Item2] = parseResult.Item2;
                 }
                 else{
-                    // Not an array
-                    // Check if it has a fixed message size
-                    var fieldSize = this.GetSizeOfNonArrayField(properties.Item1);
-                    // make sure it has a valid size
-                    if (fieldSize == -1)
-                    {
-                        // The size could only be determined at runtime.
-                        this.HasStaticSize = false;
-                        return false;
-                    }
+                    // parse a single field
+                    var parseResult = this.ParseSingleFieldType(data, property.Item1, offset);
+                    offset += parseResult.Item1; // update offset
+                    fieldDict[property.Item2] = parseResult.Item2; // add it to the list
                 }
             }
-            this.HasStaticSize = true;
-            return true;
+            return (offset - originalOffset, fieldDict);
         }
-
-
-        public Tuple<string, byte[]> GetData(byte[] rawData, string indexString)
-        {
-            // Get the field type of the index string.
-            var fieldType = this.Properties.Where(e => e.Item2 == indexString).First().Item1;
-
-            // find the offset to the field in the given mesage data.
-            var offset = this.GetOffset(rawData, indexString);
-
-            // Calculate the field size of the data
-            var fieldSize = this.GetSizeOfProperty(rawData, fieldType, offset);
-
-            // extract and return the bytes of the field.
-            return new Tuple<string, byte[]>(fieldType, rawData.Skip(offset).Take(fieldSize).ToArray());
-        }
-
         public string GetFieldType(string indexString)
         {
             return this.Properties.Where(e => e.Item2 == indexString).First().Item1;

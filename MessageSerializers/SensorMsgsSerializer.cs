@@ -71,7 +71,7 @@ namespace RosBagConverter.MessageSerializers
             using (var sharedImage = ImagePool.GetOrCreate(width, height, format))
             {
                 // skip the first 4 bytes because in ROS Message its a varied length array where the first 4 bytes tell us the length.
-                sharedImage.Resource.CopyFrom(message.GetRawField("data").Skip(4).ToArray());
+                sharedImage.Resource.CopyFrom(message.GetField("data"));
                 return sharedImage.AddRef();
                 // return sharedImage;
             }
@@ -82,7 +82,7 @@ namespace RosBagConverter.MessageSerializers
             // get format
             var format = (string)message.GetField("format");
 
-            var imageMemoryStream = new MemoryStream(message.GetRawField("data").Skip(4).ToArray());
+            var imageMemoryStream = new MemoryStream(message.GetField("data"));
             using (var image = System.Drawing.Image.FromStream(imageMemoryStream))
             {
                 var bitmap = new System.Drawing.Bitmap(image);

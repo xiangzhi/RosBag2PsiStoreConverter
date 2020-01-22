@@ -8,8 +8,6 @@ namespace RosBagConverter
 {
     public class RosHeader
     {
-
-
         public RosHeader(uint seq, RosTime time, string frameId, uint headerSize)
         {
             this.Seq = seq;
