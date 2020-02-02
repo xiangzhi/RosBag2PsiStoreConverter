@@ -51,7 +51,7 @@ namespace RosBagConverter
                 // handle weirdly out of wack times.
                 // store.Write(pipeline.Diagnostics, "ReaderDiagnostics");
 
-                var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions, opts.useHeaderTime, offset);
+                var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions, opts.useHeaderTime, offset, useCustomSerializer: opts.useCustomSerializer);
                 foreach (var topic in topicList)
                 {
                     var messageDef = bag.GetMessageDefinition(topic);

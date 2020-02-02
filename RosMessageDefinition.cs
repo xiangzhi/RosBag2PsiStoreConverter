@@ -9,24 +9,24 @@ namespace RosBagConverter
     public class RosMessageDefinition
     {
         private List<Tuple<string, string>> Properties = new List<Tuple<string, string>>();
-        public Dictionary<string, RosMessageDefinition> KnownDefinitions;
+        public Dictionary<string, RosMessageDefinition> KnownMsgDefinitions;
 
         public RosMessageDefinition(string typeName, string definition, Dictionary<string, RosMessageDefinition> knownDef)
         {
             this.Type = typeName;
-            this.KnownDefinitions = knownDef;
+            this.KnownMsgDefinitions = knownDef;
             // Parse the ROS Message Defintions
             this.parseDefinitionText(definition);
             // Add to the known list
-            if (!this.KnownDefinitions.ContainsKey(this.Type))
+            if (!this.KnownMsgDefinitions.ContainsKey(this.Type))
             {
-                this.KnownDefinitions.Add(this.Type, this);
+                this.KnownMsgDefinitions.Add(this.Type, this);
             }
         }
 
         public RosMessageDefinition(List<string> definition, Dictionary<string, RosMessageDefinition> knownDef)
         {
-            this.KnownDefinitions = knownDef;
+            this.KnownMsgDefinitions = knownDef;
             // the first line tells us the type
             var firstLine = definition[0];
             this.Type = firstLine.Substring(5, firstLine.Length - 5);
@@ -93,17 +93,17 @@ namespace RosBagConverter
                 while (sentences.Contains(definitionSplit))
                 {
                     var subSentences = sentences.Take(sentences.IndexOf(definitionSplit)).ToList();
-                    var loopRosDef = new RosMessageDefinition(subSentences, this.KnownDefinitions);
-                    if (!this.KnownDefinitions.ContainsKey(loopRosDef.Type))
+                    var loopRosDef = new RosMessageDefinition(subSentences, this.KnownMsgDefinitions);
+                    if (!this.KnownMsgDefinitions.ContainsKey(loopRosDef.Type))
                     {
-                        this.KnownDefinitions.Add(loopRosDef.Type, loopRosDef);
+                        this.KnownMsgDefinitions.Add(loopRosDef.Type, loopRosDef);
                     }
                     sentences.RemoveRange(0, sentences.IndexOf(definitionSplit) + 1);
                 }
-                var newRosDef = new RosMessageDefinition(sentences, this.KnownDefinitions);
-                if (!this.KnownDefinitions.ContainsKey(newRosDef.Type))
+                var newRosDef = new RosMessageDefinition(sentences, this.KnownMsgDefinitions);
+                if (!this.KnownMsgDefinitions.ContainsKey(newRosDef.Type))
                 {
-                    this.KnownDefinitions.Add(newRosDef.Type, newRosDef);
+                    this.KnownMsgDefinitions.Add(newRosDef.Type, newRosDef);
                 }
             }
             else
@@ -112,17 +112,13 @@ namespace RosBagConverter
             }   
         }
 
-        public List<string> FieldList
-        {
-            get
-            {
-                return Properties.Select(e => e.Item2).ToList();
-            }
-        }
+        public List<string> FieldList => this.Properties.Select(e => e.Item2).ToList();
+
         public string Type { get; private set; }
 
         public static bool IsBuiltInType(string fieldType)
         {
+            // remove the array modifier
             if (fieldType.Contains('['))
             {
                 fieldType = fieldType.Substring(0, fieldType.IndexOf('['));
@@ -211,7 +207,7 @@ namespace RosBagConverter
             {
                 // If not built in type
                 // get the message definition of the type
-                var msgDef = this.KnownDefinitions[type];
+                var msgDef = this.KnownMsgDefinitions[type];
                 var subMessageResult = msgDef.ParseMessage(rawData, offset);
                 return subMessageResult;
             }
@@ -293,6 +289,12 @@ namespace RosBagConverter
             }
             return (offset - originalOffset, fieldDict);
         }
+
+        /// <summary>
+        /// Return the type of the field given its name
+        /// </summary>
+        /// <param name="indexString">Name of field</param>
+        /// <returns>The type of the field</returns>
         public string GetFieldType(string indexString)
         {
             return this.Properties.Where(e => e.Item2 == indexString).First().Item1;

@@ -11,20 +11,24 @@ namespace RosBagConverter
     public class DynamicSerializers
     {
         private bool useHeaderTime;
+        private bool useCustomSerializer;
         private List<BaseMsgsSerializer> customSerializerList = new List<BaseMsgsSerializer>();
-        private Dictionary<string, RosMessageDefinition> knowMessageDefinitions;
+        private Dictionary<string, RosMessageDefinition> KnownMsgDefinitions;
         private TimeSpan offset;
 
-        public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions, bool useHeaderTime, TimeSpan? offset = null)
+        public DynamicSerializers(Dictionary<string, RosMessageDefinition> knownDefinitions, bool useHeaderTime, TimeSpan? offset = null, bool useCustomSerializer = true)
         {
             this.offset = offset ?? TimeSpan.Zero;
             this.useHeaderTime = useHeaderTime;
-            this.knowMessageDefinitions = knownDefinitions;
+            this.KnownMsgDefinitions = knownDefinitions;
+            this.useCustomSerializer = useCustomSerializer;
 
-            // Add standard custom serializers
-            this.AddCustomSerializer(new StdMsgsSerializers(offset: offset));
-            this.AddCustomSerializer(new SensorMsgsSerializer(useHeaderTime, offset: offset));
-            this.AddCustomSerializer(new GeometryMsgsSerializer(useHeaderTime, offset: offset));
+            if (this.useCustomSerializer){
+                // Add standard custom serializers
+                this.AddCustomSerializer(new StdMsgsSerializers(offset: offset));
+                this.AddCustomSerializer(new SensorMsgsSerializer(useHeaderTime, offset: offset));
+                this.AddCustomSerializer(new GeometryMsgsSerializer(useHeaderTime, offset: offset));
+            }
         }
 
         /// <summary>
@@ -119,8 +123,18 @@ namespace RosBagConverter
                 case uint[] _:
                     WriteStronglyTyped<uint[]>(pipeline, topic, messages, store);
                     break;
+                case string[] _:
+                    WriteStronglyTyped<string[]>(pipeline, topic, messages, store);
+                    break;
+                case float[] _:
+                    WriteStronglyTyped<float[]>(pipeline, topic, messages, store);
+                    break;
+                case double[] _:
+                    WriteStronglyTyped<double[]>(pipeline, topic, messages, store);
+                    break;
                 case RosHeader _:
-                    WriteStronglyTyped<DateTime>(pipeline, topic, messages.Select(m => ((dynamic)(m.Item1 as RosHeader).Time.ToDateTime(), m.Item2)), store);
+                    WriteStronglyTyped<DateTime>(pipeline, $"{topic}.Time", messages.Select(m => ((dynamic)(m.Item1 as RosHeader).Time.ToDateTime(), m.Item2)), store);
+                    WriteStronglyTyped<String>(pipeline, $"{topic}.FrameId", messages.Select(m => ((dynamic)(m.Item1 as RosHeader).FrameId, m.Item2)), store);
                     break;
             }
         }
@@ -137,17 +151,20 @@ namespace RosBagConverter
         /// </summary>
         public void SerializeMessages(Pipeline pipeline, Exporter store, string streamName, string messageType, IEnumerable<RosMessage> messages)
         {
-            // If it's a known type, we serialize according to a pre-defined schema
-
-            // Loop through a list of known message type
-            foreach(var serializer in this.customSerializerList)
-            {
-                // Check if they start with the currect prefix
-                if (messageType.StartsWith(serializer.Prefix))
+            // If it's a known type, we serialize according to a pre-defined schema, if chosen.
+            if (this.useCustomSerializer){
+                // Loop through a list of known message type
+                foreach(var serializer in this.customSerializerList)
                 {
-                    if (serializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
+                    // Check if they start with the currect prefix
+                    if (messageType.StartsWith(serializer.Prefix))
                     {
-                        return;
+                        // try to serialize the message
+                        if (serializer.SerializeMessage(pipeline, store, streamName, messages, messageType))
+                        {
+                            // if successful, return.
+                            return;
+                        }
                     }
                 }
             }
@@ -161,25 +178,25 @@ namespace RosBagConverter
                 if (RosMessageDefinition.IsBuiltInType(messageDefiniton.GetFieldType(fieldName)))
                 {
                     this.serializeBuiltInFields(pipeline, store, fieldName, messageDefiniton.GetFieldType(fieldName), $"{streamName}.{fieldName}", messages);
+                    continue;
                 }
-               
-                // Try to see if the field type is a known type that we read from the message definition.
-                foreach(var knownType in this.knowMessageDefinitions.Keys)
-                {
-                    if (knownType.EndsWith(messageDefiniton.GetFieldType(fieldName)))
-                    {
-                        // we construct a submessage using the same variables as before. This is to setup a recursive call on the serialization
-                        var subMessages = messages.Select(x => x.GetFieldAsRosMessage(this.knowMessageDefinitions[knownType], fieldName)).ToList();
-                        // Recursively call the serialization code
-                        this.SerializeMessages(pipeline, store, $"{streamName}.{fieldName}", knownType, subMessages);
-                    }
-                }
+
+                // It is a constructred type
+                var constructedMsgDef = this.KnownMsgDefinitions[messageDefiniton.GetFieldType(fieldName)];
+                // we construct a submessage using the same variables as before. This is to setup a recursive call on the serialization
+                var subMessages = messages.Select(x => x.GetFieldAsRosMessage(constructedMsgDef, fieldName)).ToList();
+                // Recursively call the serialization code
+                this.SerializeMessages(pipeline, store, $"{streamName}.{fieldName}", constructedMsgDef.Type, subMessages);
             }
         }
 
         private void serializeBuiltInFields(Pipeline pipeline, Exporter store, string fieldName, string fieldType, string streamName, IEnumerable<RosMessage> messages)
         {
-
+            // remove the array modifier
+            if (fieldType.Contains('['))
+            {
+                fieldType = fieldType.Substring(0, fieldType.IndexOf('['));
+            }
             switch (fieldType)
             {
                 case ("int8"):
@@ -194,6 +211,9 @@ namespace RosBagConverter
                 case ("float64"):
                 case ("string"):
                 case ("bool"):
+                case ("header"):
+                case ("Header"):
+                case ("std_msgs/Header"):
                     WriteDynamic(pipeline, streamName, messages.Select(m => (m.GetField(fieldName), m.Time.ToDateTime() + this.offset)), store);
                     return;
                 case ("time"):
@@ -201,23 +221,8 @@ namespace RosBagConverter
                     return;
                 case ("duration"):
                     WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)((RosDuration)m.GetField(fieldName)).ToTimeSpan(), m.Time.ToDateTime() + this.offset)), store);
-                    return;
-            }
-
-            // serialize arrays
-            if (fieldType.Contains("["))
-            {
-                fieldType = fieldType.Substring(0, fieldType.IndexOf('['));
-                switch (fieldType)
-                {
-                    case ("uint8"):
-                    case ("int32"):
-                    case ("float64"):
-                        WriteDynamic(pipeline, streamName, messages.Select(m => ((dynamic)m.GetField(fieldName), m.Time.ToDateTime() + this.offset)), store);
-                        return;
-                }
-            }
-            
+                    return;                    
+            }            
         }
     }
 }

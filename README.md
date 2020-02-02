@@ -5,13 +5,13 @@ This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform
 
 
 Some properties of the tool:
-* For `Stamped` messages specified in [MessageSerializers](MessageSerializers), use option `h` to use header stamp time instead of message publish time as originating time of message in Psi Stream.
-* If given the option `-r`, the ROSBag's time starts from the beginning of this application.
-* Does not rely on any external Ros message definitions, the tool figures out the fields from the message definitions in the RosBag.
-* Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image)
-* For standard messsages not implemented or custom ros messages, the tool deconstruct them into their [ros message built-in types](http://wiki.ros.org/msg)
+* Does not need to prespecify message type or definitions. Does not rely on any external Ros message definitions OR the Psi Ros Stack. The tool will figure out the fields and types from the message definitions encoded in the RosBag.
+* Convert some common standard Ros messages into Psi formats (example: Sensor_msgs/Image -> Image). A list of custom converters is specified in [MessageSerializers](MessageSerializers).
+* For standard messages not implemented or custom constructed ros messages, the tool deconstructs them into their [ros message built-in types](http://wiki.ros.org/msg) through recursion.
+* For `Stamped` messages specified in [MessageSerializers](MessageSerializers) with their own converters, use option `h` to use header stamp time instead of message publish time as originating time of message in Psi Stream. 
+* To restamp the time to the pipeline start time, use the option `-r`. In this mode, the messages originating time will change to the start of the pipeline with the same original offsets between messages recorded in the Rosbag. *Note due to implementation issues, the start time might be earlier than the actual start time* 
 
-## Installation
+## Installation & Build
 
 The tool depends on the [Platform for Situated Intelligence](https://github.com/microsoft/psi) which is installed upon first build.
 Open `RosBagConverter.sln` and Build Solution.
@@ -20,7 +20,12 @@ Open `RosBagConverter.sln` and Build Solution.
 
 To use the tool, open the commandline tool and navigate to where the executable is. Our goal is to eventually provide the same functionalities as those in [rosbag tools](http://wiki.ros.org/bag_tools).
 
-If you need some test data, try running through the [Recording and playing back data](http://wiki.ros.org/rosbag/Tutorials/Recording%20and%20playing%20back%20data) tutorial, then `RosBagConverter.exe convert -f <my_path>\turtle.bag -o <my_path> -n Turtle`
+Here are list of test RosBags:
+* [Single RosBag with single message]()
+* [Single RosBag with multiple messages including arrays]()
+* [Single RosBag with custom Ros Message type]()
+
+If you need want to build your own test data, try running through the [Recording and playing back data](http://wiki.ros.org/rosbag/Tutorials/Recording%20and%20playing%20back%20data) tutorial, then `RosBagConverter.exe convert -f <my_path>\turtle.bag -o <my_path> -n Turtle`
 
 #### Info
 
@@ -91,9 +96,13 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
+* TBD
+	* Added option `-s` to specify whether to use custom serializers.
+	* Speed up of the conversion up to X % through:
+		* Rewrote the reader to parse/store the message upon reading and creation.
+		* Minor audit of code and removed redundant checks and loops. 
 * 1/16/2020
 	* Added interface to add custom serializers.-
-
 	* Added option `-r` to restamp the time.
 * 1/13/2020
 	* Added serialization of sensor_msgs/CompressedImage to uncompressed Psi Images
