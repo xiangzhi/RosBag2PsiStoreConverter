@@ -162,7 +162,7 @@ namespace RosBagConverter
             {
                 case "string":
                     var len = (int)BitConverter.ToInt32(rawData, offset);
-                    return new Tuple<int, dynamic>(len+4, Encoding.UTF8.GetString(rawData, offset + 4, rawData.Length - offset -4));
+                    return new Tuple<int, dynamic>(len+4, Encoding.UTF8.GetString(rawData, offset + 4, len));
                 case "bool":
                     return new Tuple<int, dynamic>(1, BitConverter.ToBoolean(rawData, offset));
                 case "int8":
@@ -192,7 +192,7 @@ namespace RosBagConverter
                 case "header":
                 case "Header":
                     var header = RosHeader.FromRosBytes(rawData, offset);
-                    return new Tuple<int, dynamic>((int)header.HeaderByteSize, header);
+                    return new Tuple<int, dynamic>(header.HeaderByteSize, header);
             }
             return null;
         }
@@ -236,7 +236,7 @@ namespace RosBagConverter
                 case "string": return this.ParseArrayField<string>(rawData, arrSize, arrayType, offset);
                 case "bool": return this.ParseArrayField<bool>(rawData, arrSize, arrayType, offset);
                 case "int8": return this.ParseArrayField<sbyte>(rawData, arrSize, arrayType, offset);
-                case "uint8": return (arrSize, (dynamic) rawData);
+                case "uint8": return (arrSize, (dynamic) rawData.Skip(offset).Take(arrSize).ToArray());
                 case "int16": return this.ParseArrayField<short>(rawData, arrSize, arrayType, offset);
                 case "uint16": return this.ParseArrayField<ushort>(rawData, arrSize, arrayType, offset);
                 case "int32": return this.ParseArrayField<int>(rawData, arrSize, arrayType, offset);
