@@ -181,8 +181,35 @@ namespace RosBagConverter
                     continue;
                 }
 
+                var fieldType = messageDefiniton.GetFieldType(fieldName);
+
+                // We going to ignore array of constructed type for now. Not too sure what the equivalent in Psi world might be.
+                if (fieldType.EndsWith("]")){
+                    continue;
+                }
+
                 // It is a constructred type
-                var constructedMsgDef = this.KnownMsgDefinitions[messageDefiniton.GetFieldType(fieldName)];
+
+                RosMessageDefinition constructedMsgDef = null;
+                if (this.KnownMsgDefinitions.ContainsKey(fieldType))
+                {
+                    constructedMsgDef = this.KnownMsgDefinitions[fieldType];
+                }
+                else
+                {
+                    foreach (var name in this.KnownMsgDefinitions.Keys)
+                    {
+                        if (name.EndsWith(fieldType))
+                        {
+                            constructedMsgDef = this.KnownMsgDefinitions[name];
+                            break;
+                        }
+                    }
+                    if (constructedMsgDef == null)
+                    {
+                        throw new KeyNotFoundException($"{fieldType} not found among known message definitions.");
+                    }
+                }
                 // we construct a submessage using the same variables as before. This is to setup a recursive call on the serialization
                 var subMessages = messages.Select(x => x.GetFieldAsRosMessage(constructedMsgDef, fieldName)).ToList();
                 // Recursively call the serialization code

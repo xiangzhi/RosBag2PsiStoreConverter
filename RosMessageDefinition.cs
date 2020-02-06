@@ -205,9 +205,29 @@ namespace RosBagConverter
             }
             else
             {
+                RosMessageDefinition msgDef = null;
                 // If not built in type
                 // get the message definition of the type
-                var msgDef = this.KnownMsgDefinitions[type];
+                if (this.KnownMsgDefinitions.ContainsKey(type))
+                {
+                    msgDef = this.KnownMsgDefinitions[type];
+                }
+                else
+                {
+                    // Its possible the name isn't format correctly. Lack the beginning part
+                    foreach(var name in this.KnownMsgDefinitions.Keys)
+                    {
+                        if (name.EndsWith(type))
+                        {
+                            msgDef = this.KnownMsgDefinitions[name];
+                            break;
+                        }
+                    }
+                    if (msgDef == null)
+                    {
+                        throw new KeyNotFoundException($"{type} not found among known message definitions.");
+                    }
+                }
                 var subMessageResult = msgDef.ParseMessage(rawData, offset);
                 return subMessageResult;
             }

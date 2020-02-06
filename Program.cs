@@ -61,7 +61,7 @@ namespace RosBagConverter
                 pipeline.Run();
             }
             watch.Stop();
-            Console.WriteLine($"Total elapsed time:{watch.ElapsedMilliseconds/1000} secs");
+            Console.WriteLine($"Total elapsed time:{watch.ElapsedMilliseconds/1000.0} secs");
 
             return 1;
         }

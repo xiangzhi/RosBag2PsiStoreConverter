@@ -21,11 +21,11 @@ namespace RosBagConverter
             return RosHeader.FromRosBytes(headerBytes, 0);
         }
 
-        public static RosHeader FromRosBytes(byte[] headerBytes, int offset)
+        public static RosHeader FromRosBytes(byte[] headerBytes, int offset = 0)
         {
             // calculate the size of the frame string
-            var frameStringLength = BitConverter.ToInt32(headerBytes, 12);
-            return new RosHeader(BitConverter.ToUInt32(headerBytes, 0), RosTime.FromRosBytes(headerBytes, 4), Encoding.UTF8.GetString(headerBytes, 16, frameStringLength), frameStringLength + 16);
+            var frameStringLength = BitConverter.ToInt32(headerBytes, offset + 12);
+            return new RosHeader(BitConverter.ToUInt32(headerBytes, offset), RosTime.FromRosBytes(headerBytes, offset + 4), Encoding.UTF8.GetString(headerBytes, offset + 16, frameStringLength), frameStringLength + 16);
         }
 
 
