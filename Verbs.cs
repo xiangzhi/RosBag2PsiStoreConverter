@@ -39,6 +39,10 @@ namespace RosBagConverter
 
             [Option('t', "topics", HelpText = "List of topics to be converted to PsiStore")]
             public IEnumerable<string> Topics { get; set; }
+
+            [Option('x', "topics", HelpText = "List of topics to be excluded when converting to PsiStore format")]
+            public IEnumerable<string> ExcludeTopic { get; set; }
+
         }
     }
 }

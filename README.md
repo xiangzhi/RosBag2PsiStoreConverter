@@ -79,6 +79,8 @@ Converts the rosbag to a PsiStore. You can specified which topic to be converted
 
   -t, --topics     List of topics to be converted to PsiStore
 
+  -x, --exclude	   List of topics to be excluded when converting to PsiStore
+
   --help           Display this help screen.
 
   --version        Display version information.
@@ -96,9 +98,10 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
-* TBD
+* 2/27/2020
 	* Added option `-s` to specify whether to use custom serializers.
-	* Speed up of the conversion up to X % through:
+	* Added option `-x`	to specify topics to be excluded when converting. 
+	* Speed up of the conversion up to 600 % through:
 		* Rewrote the reader to parse/store the message upon reading and creation.
 		* Minor audit of code and removed redundant checks and loops. 
 * 1/16/2020

@@ -54,6 +54,9 @@ namespace RosBagConverter
                 var dynamicSerializer = new DynamicSerializers(bag.KnownRosMessageDefinitions, opts.useHeaderTime, offset, useCustomSerializer: opts.useCustomSerializer);
                 foreach (var topic in topicList)
                 {
+                    if (opts.ExcludeTopic.Contains(topic)){
+                        continue;
+                    }
                     var messageDef = bag.GetMessageDefinition(topic);
                     var messages = bag.ReadTopic(topic);
                     dynamicSerializer.SerializeMessages(pipeline, store, topic, messageDef.Type, messages);
