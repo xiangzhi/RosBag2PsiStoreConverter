@@ -28,6 +28,7 @@ namespace RosBagConverter
                 this.AddCustomSerializer(new StdMsgsSerializers(offset: offset));
                 this.AddCustomSerializer(new SensorMsgsSerializer(useHeaderTime, offset: offset));
                 this.AddCustomSerializer(new GeometryMsgsSerializer(useHeaderTime, offset: offset));
+                this.AddCustomSerializer(new TBDMsgsSerializers(useHeaderTime, offset: offset));
             }
         }
 

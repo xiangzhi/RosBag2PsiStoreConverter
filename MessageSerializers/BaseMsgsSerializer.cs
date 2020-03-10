@@ -30,6 +30,20 @@ namespace RosBagConverter.MessageSerializers
         /// <returns>Whether the convert and serialization of the messages were successful</returns>
         public abstract bool SerializeMessage(Pipeline pipeline, Exporter store, string streamName, IEnumerable<RosMessage> messages, string messageType);
 
+        /// <summary>
+        /// Helper function to convert ROS Header to Psi Stream time. First check if use header time is set before converting
+        /// </summary>
+        /// <param name="m">Incoming Message</param>
+        /// <returns>Datetime from header if set, else Datetime of message publish time</returns>
+        protected DateTime ConvertMessageHeader(RosMessage m)
+        {
+            if (!m.HasField("header") && this.useHeaderTime)
+            {
+                throw new InvalidCastException("Attempting to extract header time in non-header ROS message.");
+            }
+            return this.useHeaderTime ? ((RosHeader) m.GetField("header")).Time.ToDateTime() + this.Offset : m.Time.ToDateTime() + this.Offset;
+        }
+
         public string Prefix { get; private set; }
 
         public TimeSpan Offset { get; private set; }

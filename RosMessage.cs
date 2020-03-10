@@ -75,6 +75,16 @@ namespace RosBagConverter
             return new RosMessage(def, this.Time, this.Conn, this.fields[indexString]);
         }
 
+        /// <summary>
+        /// Check if the field exist.
+        /// </summary>
+        /// <param name="indexString">Name of the field</param>
+        /// <returns>true if field exist, false otherwise.</returns>
+        public bool HasField(string indexString)
+        {
+            return this.fields.ContainsKey(indexString);
+        }
+
 
         /// <summary>
         /// Return the data of the field as its casted type.

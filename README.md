@@ -98,6 +98,9 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
+* TBD:
+	* Added lab specific serializers.
+	* Created helper method to convert header time.
 * 2/27/2020
 	* Added option `-s` to specify whether to use custom serializers.
 	* Added option `-x`	to specify topics to be excluded when converting. 

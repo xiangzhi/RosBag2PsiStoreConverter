@@ -28,7 +28,7 @@ namespace RosBagConverter.MessageSerializers
                         return true;
                     case ("sensor_msgs/CompressedImage"):
                         // get header
-                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.CompressedImageToPsiImage(m), this.useHeaderTime ? ((RosHeader)m.GetField("header")).Time.ToDateTime() + this.Offset : m.Time.ToDateTime() + this.Offset)), store);
+                        DynamicSerializers.WriteStronglyTyped<Shared<Image>>(pipeline, streamName, messages.Select(m => (this.CompressedImageToPsiImage(m), this.ConvertMessageHeader(m))), store);
                         return true;
                     default: return false;
                 }
