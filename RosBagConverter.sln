@@ -5,7 +5,13 @@ VisualStudioVersion = 16.0.29326.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RosBagConverter", "Sources\RosBagConverter\RosBagConverter.csproj", "{E02DE2D7-7B7F-4667-953C-A39BB79FB657}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RosBagConverterTests", "Sources\RosBagConverterTests\RosBagConverterTests.csproj", "{D2F46C19-2265-40A3-B58C-8A3DB910CBD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RosBagConverterTests", "Sources\RosBagConverterTests\RosBagConverterTests.csproj", "{D2F46C19-2265-40A3-B58C-8A3DB910CBD7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD1F2D50-D38B-44AB-9537-193F038F6B16}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
