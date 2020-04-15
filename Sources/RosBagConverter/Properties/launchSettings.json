@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RosBagConverter": {
+      "commandName": "Project",
+      "commandLineArgs": "convert -f D:\\\\Data\\\\Baxter -o C:\\\\Data\\\\Stores -n baxter_example"
+    }
+  }
+}

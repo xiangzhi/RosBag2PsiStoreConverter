@@ -21,9 +21,7 @@ Open `RosBagConverter.sln` and Build Solution.
 To use the tool, open the commandline tool and navigate to where the executable is. Our goal is to eventually provide the same functionalities as those in [rosbag tools](http://wiki.ros.org/bag_tools).
 
 Here are list of test RosBags:
-* [Single RosBag with single message]()
-* [Single RosBag with multiple messages including arrays]()
-* [Single RosBag with custom Ros Message type]()
+* [Single RosBag with two topics. rosout and string message](SampleBags/psi_simple.bag)
 
 If you need want to build your own test data, try running through the [Recording and playing back data](http://wiki.ros.org/rosbag/Tutorials/Recording%20and%20playing%20back%20data) tutorial, then `RosBagConverter.exe convert -f <my_path>\turtle.bag -o <my_path> -n Turtle`
 
@@ -98,6 +96,11 @@ RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
 ## ChangeLog:
+* 4/15/2020
+	* Update the Psi Nugets to the newest verison - 0.11.82.2
+	* Reorganized Repository:
+		* Added UnitTests.
+		* Add sample ROS Bags.
 * 2/27/2020
 	* Added option `-s` to specify whether to use custom serializers.
 	* Added option `-x`	to specify topics to be excluded when converting. 
