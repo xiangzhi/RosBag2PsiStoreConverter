@@ -95,39 +95,4 @@ RosBagConverter.exe convert -f C:\Data\psi_example1.bag C:\Data\psi_example2.bag
 RosBagConverter.exe convert -f C:\Data -o C:\Data -n t3 --topics /text /rosout
 ```
 
-## ChangeLog:
-* 4/15/2020
-	* Update the Psi Nugets to the newest verison - 0.11.82.2
-	* Reorganized Repository:
-		* Added UnitTests.
-		* Add sample ROS Bags.
-* 2/27/2020
-	* Added option `-s` to specify whether to use custom serializers.
-	* Added option `-x`	to specify topics to be excluded when converting. 
-	* Speed up of the conversion up to 600 % through:
-		* Rewrote the reader to parse/store the message upon reading and creation.
-		* Minor audit of code and removed redundant checks and loops. 
-* 1/16/2020
-	* Added interface to add custom serializers.-
-	* Added option `-r` to restamp the time.
-* 1/13/2020
-	* Added serialization of sensor_msgs/CompressedImage to uncompressed Psi Images
-	* Added ability to specify whether to use header time for selected stamped messages using `-h` command
-* 1/9/2020
-	* Added a bunch of geometry_msgs definition.
-	* fixed the problem of chain lookup of fields in serialization.
-	* changed to .NET core to run on Linux machines.
-	* Show number of message in Info screen
-* 12/28/2019
-	* bug fixed to make sure it works
-	* 30% faster on complex ROS BAGs by precalculating offsets of fields.
-	* Showed message types in Info screen
-* 11/21/2019
-	* Rewrite the RosBag component to lazily read from the ROS Bags.
-	* Refactor code.
-	* Allow the reading of multiple ros bag files as long as they are ordered correctly.
-
-## TODO
-1. Figure out slowdown and optimize code
-1. Implement more standard message types (Sensor_msgs, Geometry_msgs, etc)
-1. Figure out how to handle transformations that exist on the /tf and /tf_static topics. 
+## [ChangeLog](CHANGLOD.md)
