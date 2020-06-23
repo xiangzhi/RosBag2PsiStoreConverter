@@ -21,7 +21,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Download Test Data
       run: |
-        wget https://www.dropbox.com/sh/iprwyiwlud7ujv0/AADZbauYvWnMsqRDKaCZPyODa?dl=1
+        wget -O TestBags.zip https://www.dropbox.com/sh/iprwyiwlud7ujv0/AADZbauYvWnMsqRDKaCZPyODa?dl=1
         unzip TestBags.zip -d Sources/RosBagConverterTests/TestBags/
     - name: Test
       run: dotnet test --no-restore --verbosity normal
