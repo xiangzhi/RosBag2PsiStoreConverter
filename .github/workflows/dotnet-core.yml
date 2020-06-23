@@ -23,6 +23,6 @@ jobs:
       run: |
         wget -O TestBags.zip https://www.dropbox.com/sh/iprwyiwlud7ujv0/AADZbauYvWnMsqRDKaCZPyODa?dl=1
         mkdir Sources/RosBagConverterTests/TestBags/
-        unzip TestBags.zip -d Sources/RosBagConverterTests/TestBags
+        unzip TestBags.zip -x / -d Sources/RosBagConverterTests/TestBags
     - name: Test
       run: dotnet test --no-restore --verbosity normal
