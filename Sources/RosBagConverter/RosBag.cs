@@ -35,6 +35,11 @@ namespace RosBagConverter
             }
         }
 
+        public RosBag(string[] bagPaths)
+            : this(bagPaths.ToList())
+        {
+        }
+
         public RosBag(List<string> bagPaths)
             : this()
         {
