@@ -8,9 +8,6 @@
     <Version>1.0.0-beta</Version>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.7.82" />
     <PackageReference Include="MathNet.Spatial" Version="0.5.0" />
     <PackageReference Include="Microsoft.Psi.Imaging" Version="0.12.53.2-beta" />

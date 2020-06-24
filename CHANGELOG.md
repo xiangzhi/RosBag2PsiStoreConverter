@@ -7,9 +7,10 @@
 
 
 ## ChangeLog:
-#### [Unreleased]
+#### [0.0.8] - 2020-06-23
 	* Update the Psi Nugets to the newest verison - 0.12.53.2-beta
-	* Reorganized Sample ROS Bags and added additional Bags
+	* Reorganized Sample ROS Bags.
+	* Added additional test for parsing more complex files.
 #### [0.0.7] - 2020-04-15
 	* Update the Psi Nugets to the newest verison - 0.11.82.2
 	* Reorganized Repository:

@@ -20,6 +20,13 @@ namespace RosBagConverterTests
             string[] expectedTopicList = { "/rosout", "/text" };
             CollectionAssert.AreEqual(bag.TopicList, expectedTopicList);
             Assert.AreEqual(bag.MessageCounts["/text"], 56 );
+            int index = 3;
+            var textOutput = bag.ReadTopic("/text");
+            foreach (var output in textOutput)
+            {
+                Assert.AreEqual(output.GetField("data"), $"Hello {index}");
+                index++;
+            }
         }
 
         [TestMethod]

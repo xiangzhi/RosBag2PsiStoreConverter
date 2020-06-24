@@ -23,7 +23,7 @@ To use the tool, open the commandline tool and navigate to where the executable 
 Here are list of test RosBags:
 * [Single RosBag with two topics. rosout and string message](SampleBags/psi_simple.bag)
 
-If you need want to build your own test data, try running through the [Recording and playing back data](http://wiki.ros.org/rosbag/Tutorials/Recording%20and%20playing%20back%20data) tutorial, then `RosBagConverter.exe convert -f <my_path>\turtle.bag -o <my_path> -n Turtle`
+If you want to build your own test data, try running through the [Recording and playing back data](http://wiki.ros.org/rosbag/Tutorials/Recording%20and%20playing%20back%20data) tutorial, then `RosBagConverter.exe convert -f <my_path>\turtle.bag -o <my_path> -n Turtle`
 
 #### Info
 
