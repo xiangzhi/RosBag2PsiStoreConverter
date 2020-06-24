@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Download Test Data
+      run: |
+        wget -O TestBags.zip https://www.dropbox.com/sh/iprwyiwlud7ujv0/AADZbauYvWnMsqRDKaCZPyODa?dl=1
+        mkdir Sources/RosBagConverterTests/TestBags/
+        unzip TestBags.zip -x / -d Sources/RosBagConverterTests/TestBags
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -19,10 +24,5 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
-    - name: Download Test Data
-      run: |
-        wget -O TestBags.zip https://www.dropbox.com/sh/iprwyiwlud7ujv0/AADZbauYvWnMsqRDKaCZPyODa?dl=1
-        mkdir Sources/RosBagConverterTests/TestBags/
-        unzip TestBags.zip -x / -d Sources/RosBagConverterTests/TestBags
     - name: Test
       run: dotnet test --no-restore --verbosity normal
