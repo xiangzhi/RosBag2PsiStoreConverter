@@ -1,4 +1,11 @@
-﻿# RosBag to PsiStore Converter
+# DEPRECIATED
+
+## Please look at https://github.com/CMU-TBD/TBD.Psi.Components/tree/main/TBD.Psi.RosBagStreamReader for the newest version of the converter. It knows work directly in PsiStudio!!
+
+---
+
+
+# RosBag to PsiStore Converter
 Licensed under the MIT license.
 
 This project builds a tool that converts Ros Bag (version 2.0 only) to [Platform for Situated Intelligence](https://github.com/microsoft/psi) Store (a.k.a. PsiStore). Works on Linux, Mac and Window machines.
